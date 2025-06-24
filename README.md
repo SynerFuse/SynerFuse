@@ -18,6 +18,7 @@
   - `mbs0, mbs1, ...`：对应设备组的微批次大小。
 
 - 约束：
+  
   $$
   \sum_{i} n_i = \text{data-parallel-size}
   $$
@@ -36,13 +37,14 @@
   - `nmb0, nmb1, ...`：对应设备组的微批次数量。
 
 - 约束：
-  $$
-  \sum_{i} n_i = \text{data-parallel-size}
-  $$
 
-  $$
-  \text{global\_batch\_size} = \sum_{i} n_i \times \text{mbs}_i \times \text{num\_mbs}_i
-  $$
+$$
+\sum_{i} n_i = \text{data-parallel-size}
+$$
+
+$$
+\text{global-batch-size} = \sum_{i} n_i \times \text{mbs}_i \times \text{num-mbs}_i
+$$
 
 ---
 
