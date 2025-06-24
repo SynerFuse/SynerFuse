@@ -20,12 +20,34 @@ def build_pretraining_data_loader(dataset, consumed_samples):
 
     # Megatron sampler
     if args.dataloader_type == 'single':
-        batch_sampler = MegatronPretrainingSampler(
-            total_samples=len(dataset),
-            consumed_samples=consumed_samples,
-            micro_batch_size=args.micro_batch_size,
-            data_parallel_rank=mpu.get_data_parallel_rank(),
-            data_parallel_size=mpu.get_data_parallel_world_size())
+        if args.num_micro_batches_per_dp is None:
+            if args.micro_batch_size_per_dp is None:
+                batch_sampler = MegatronPretrainingSampler(
+                    total_samples=len(dataset),
+                    consumed_samples=consumed_samples,
+                    micro_batch_size=args.micro_batch_size,
+                    data_parallel_rank=mpu.get_data_parallel_rank(),
+                    data_parallel_size=mpu.get_data_parallel_world_size())
+            else:
+                batch_sampler = MegatronPretrainingMicroBatchSizePerDPsSampler(
+                    total_samples=len(dataset),
+                    consumed_samples=consumed_samples,
+                    micro_batch_size=args.micro_batch_size,
+                    micro_batch_size_per_dp=args.micro_batch_size_per_dp,
+                    data_parallel_splits=args.data_parallel_splits,
+                    data_parallel_rank=mpu.get_data_parallel_rank(),
+                    data_parallel_size=mpu.get_data_parallel_world_size())
+        else:
+            batch_sampler = MegatronPretrainingNumMicrobatchesPerDPSampler(
+                total_samples=len(dataset),
+                consumed_samples=consumed_samples,
+                num_microbatch=args.num_micro_batches,
+                micro_batch_size=args.micro_batch_size,
+                micro_batch_size_per_dp=args.micro_batch_size_per_dp,
+                num_micro_batches_per_dp=args.num_micro_batches_per_dp,
+                data_parallel_splits=args.data_parallel_splits,
+                data_parallel_rank=mpu.get_data_parallel_rank(),
+                data_parallel_size=mpu.get_data_parallel_world_size())
     elif args.dataloader_type == 'cyclic':
         batch_sampler = MegatronPretrainingRandomSampler(
             dataset,
@@ -98,6 +120,165 @@ class MegatronPretrainingSampler:
         if len(batch) > 0 and not self.drop_last:
             start_idx, end_idx = self.get_start_end_idx()
             yield batch[start_idx:end_idx]
+
+
+class MegatronPretrainingMicroBatchSizePerDPsSampler:
+
+    def __init__(self, total_samples, consumed_samples, micro_batch_size,
+                 micro_batch_size_per_dp, data_parallel_splits,
+                 data_parallel_rank, data_parallel_size, drop_last=True):
+        # Keep a copy of input params for later use.
+        self.total_samples = total_samples
+        self.consumed_samples = consumed_samples
+        self.micro_batch_size = micro_batch_size
+        self.micro_batch_size_per_dp = micro_batch_size_per_dp
+        self.data_parallel_splits = data_parallel_splits
+        self.data_parallel_rank = data_parallel_rank
+        self.micro_batch_for_all_data_parallel = sum(map(lambda x, y: x * y,
+                                                         micro_batch_size_per_dp,
+                                                         data_parallel_splits))
+        self.drop_last = drop_last
+
+        # Sanity checks.
+        assert self.total_samples > 0, \
+            'no sample to consume: {}'.format(self.total_samples)
+        assert self.consumed_samples < self.total_samples, \
+            'no samples left to consume: {}, {}'.format(self.consumed_samples,
+                                                        self.total_samples)
+        assert self.micro_batch_size > 0
+        assert data_parallel_size > 0
+        assert data_parallel_size == sum(self.data_parallel_splits)
+        assert self.data_parallel_rank < data_parallel_size, \
+            'data_parallel_rank should be smaller than data size: {}, ' \
+            '{}'.format(self.data_parallel_rank, data_parallel_size)
+
+    def __len__(self):
+        return self.total_samples
+
+    # 由于每个DP的MBS不同，会根据不同的MBS大小来获取到不同的start_idx和end_idx
+    def get_start_end_idx(self):
+        accumulated_mbs = 0
+        accumulated_ranks = 0
+        current_micro_batch_size = 0
+        data_parallel_rank = self.data_parallel_rank
+        for mbs, split in zip(self.micro_batch_size_per_dp,
+                              self.data_parallel_splits):
+            current_micro_batch_size = mbs
+            if data_parallel_rank < accumulated_ranks + split:
+                break
+            else:
+                accumulated_mbs += mbs * split
+                accumulated_ranks += split
+        start_idx = accumulated_mbs + (data_parallel_rank - accumulated_ranks) * current_micro_batch_size
+        end_idx = start_idx + current_micro_batch_size
+
+        assert current_micro_batch_size == self.micro_batch_size, \
+            'current micro batch size ({}) is not equal to micro batch size ({})'.format(
+                current_micro_batch_size, self.micro_batch_size)
+
+        return start_idx, end_idx
+
+    # 每次返回的可迭代的数据长度为指定DP下MBS的大小
+    def __iter__(self):
+        batch = []
+        # Last batch will be dropped if drop_last is not set False
+        for idx in range(self.consumed_samples, self.total_samples):
+            batch.append(idx)
+            if len(batch) == self.micro_batch_for_all_data_parallel:
+                start_idx, end_idx = self.get_start_end_idx()
+                yield batch[start_idx:end_idx]
+                batch = []
+
+        # Check the last partial batch and see drop_last is set
+        if len(batch) > 0 and not self.drop_last:
+            start_idx, end_idx = self.get_start_end_idx()
+            yield batch[start_idx:end_idx]
+
+
+class MegatronPretrainingNumMicrobatchesPerDPSampler:
+
+    def __init__(self, total_samples, consumed_samples, num_microbatch, micro_batch_size,
+                 micro_batch_size_per_dp, num_micro_batches_per_dp, data_parallel_splits,
+                 data_parallel_rank, data_parallel_size, drop_last=True):
+        # Keep a copy of input params for later use.
+        self.total_samples = total_samples
+        self.consumed_samples = consumed_samples
+        self.num_microbatch = num_microbatch
+        self.micro_batch_size = micro_batch_size
+        self.micro_batch_size_per_dp = micro_batch_size_per_dp
+        self.num_micro_batches_per_dp = num_micro_batches_per_dp
+        self.data_parallel_splits = data_parallel_splits
+        self.data_parallel_rank = data_parallel_rank
+        self.micro_batch_for_all_data_parallel = sum(map(lambda x, y, z: x * y * z,
+                                                         micro_batch_size_per_dp,
+                                                         data_parallel_splits,
+                                                         num_micro_batches_per_dp))
+        self.drop_last = drop_last
+        # Sanity checks.
+        assert self.total_samples > 0, \
+            'no sample to consume: {}'.format(self.total_samples)
+        assert self.consumed_samples < self.total_samples, \
+            'no samples left to consume: {}, {}'.format(self.consumed_samples,
+                                                        self.total_samples)
+        assert self.micro_batch_size > 0
+        assert data_parallel_size > 0
+        assert data_parallel_size == sum(self.data_parallel_splits)
+        assert self.data_parallel_rank < data_parallel_size, \
+            'data_parallel_rank should be smaller than data size: {}, ' \
+            '{}'.format(self.data_parallel_rank, data_parallel_size)
+
+    def __len__(self):
+        return self.total_samples
+
+    def get_start_end_idx(self):
+        accumulated_mbs = 0
+        accumulated_ranks = 0
+        current_micro_batch_size = 0
+        data_parallel_rank = self.data_parallel_rank
+        for i in range(len(self.micro_batch_size_per_dp)):
+            micro_bs = self.micro_batch_size_per_dp[i]
+            split = self.data_parallel_splits[i]
+            num_mbs = self.num_micro_batches_per_dp[i]
+            current_micro_batch_size = micro_bs
+            if data_parallel_rank < accumulated_ranks + split:
+                break
+            else:
+                accumulated_mbs += micro_bs * split * num_mbs
+                accumulated_ranks += split
+
+        start_idxes = []
+        end_idxes = []
+
+        for i in range(self.num_microbatch):
+            start_idx = accumulated_mbs + (
+                        data_parallel_rank - accumulated_ranks) * current_micro_batch_size + i * current_micro_batch_size
+            end_idx = start_idx + current_micro_batch_size
+            start_idxes.append(start_idx)
+            end_idxes.append(end_idx)
+
+        assert current_micro_batch_size == self.micro_batch_size, \
+            'current micro batch size ({}) is not equal to micro batch size ({})'.format(
+                current_micro_batch_size, self.micro_batch_size)
+
+        return start_idxes, end_idxes
+
+    def __iter__(self):
+        batch = []
+        # Last batch will be dropped if drop_last is not set False
+        for idx in range(self.consumed_samples, self.total_samples):
+            batch.append(idx)
+            if len(batch) == self.micro_batch_for_all_data_parallel:
+                start_idxes, end_idxes = self.get_start_end_idx()
+                for start_idx, end_idx in zip(start_idxes, end_idxes):
+                    yield batch[start_idx:end_idx]
+                batch = []
+
+        # Check the last partial batch and see drop_last is set
+        if len(batch) > 0 and not self.drop_last:
+            start_idxes, end_idxes = self.get_start_end_idx()
+            for start_idx, end_idx in zip(start_idxes, end_idxes):
+                yield batch[start_idx:end_idx]
+            batch = []
 
 
 class RandomSeedDataset(Dataset):

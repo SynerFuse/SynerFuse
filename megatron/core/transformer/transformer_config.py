@@ -102,6 +102,11 @@ class TransformerConfig(ModelParallelConfig):
     """Whether cross entropy loss is calculated over the actual number of non-padded tokens in the
     global batch, versus the default behavior of assuming all tokens are non-padded."""
 
+    num_micro_batches_gard_factor: float = 0
+    """If this is not zero, the num micro batches per dp implementation would be used.
+       Defaults to 0.
+    """
+    
     ####################
     # initialization
     ####################

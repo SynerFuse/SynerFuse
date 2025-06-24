@@ -62,6 +62,7 @@ class Bucket:
         data_parallel_group: torch.distributed.ProcessGroup,
         data_parallel_world_size: int,
         gradient_scaling_factor: float,
+        num_micro_batches_gard_factor: float = 0,
     ):
         self.ddp_config = ddp_config
 
@@ -82,6 +83,12 @@ class Bucket:
         self.data_parallel_world_size = data_parallel_world_size
         self.data_parallel_rank = torch.distributed.get_rank(group=data_parallel_group)
         self.gradient_scaling_factor = gradient_scaling_factor
+        # Scaling gradinents to reduce loss calculation error when using num micro batches per dp,
+        # and it is similar to gradient_scaling_factor.
+        if num_micro_batches_gard_factor != 0:
+            self.num_micro_batches_gard_factor = num_micro_batches_gard_factor * self.data_parallel_world_size
+        else:
+            self.num_micro_batches_gard_factor = 0
 
         self.reset()
 
@@ -126,6 +133,11 @@ class Bucket:
         reduce_op = torch.distributed.ReduceOp.SUM
         if self.ddp_config.average_in_collective:
             reduce_op = torch.distributed.ReduceOp.AVG
+
+        # Gradients needs to be multiplied by the scaling factor when using num micro batches per dp,
+        # in order to reduce loss calculation error.
+        if self.num_micro_batches_gard_factor != 0:
+            self.grad_data *= self.num_micro_batches_gard_factor
 
         # Use async_op only when overlap_grad_reduce is True.
         if self.ddp_config.use_distributed_optimizer:
@@ -204,6 +216,8 @@ class ParamAndGradBuffer:
         gradient_scaling_factor: This factor is utilized to scale gradients prior to their
             communication. Its application is twofold: it facilitates the averaging of gradients
             and the scaling of gradients in the context of the Mixture of Experts (MoE) model.
+        num_micro_batches_gard_factor: This factor is utilized to avoid loss calculation error when 
+            using num micro batches per dp, and its function is similar to gradient_scaling_factor.
     """
 
     def __init__(
@@ -216,8 +230,10 @@ class ParamAndGradBuffer:
         bucket_size: int,
         param_to_name: Dict[torch.nn.Parameter, str],
         gradient_scaling_factor: float,
+        num_micro_batches_gard_factor: float = 0,
     ):
         self.ddp_config = ddp_config
+        self.num_micro_batches_gard_factor = num_micro_batches_gard_factor
 
         # Check that params are unique.
         unique_params = set()
@@ -494,6 +510,7 @@ class ParamAndGradBuffer:
             data_parallel_group=self.data_parallel_group,
             data_parallel_world_size=self.data_parallel_world_size,
             gradient_scaling_factor=self.gradient_scaling_factor,
+            num_micro_batches_gard_factor=self.num_micro_batches_gard_factor,
         )
         self.buckets.append(bucket)
         for bucket_param in bucket_params:

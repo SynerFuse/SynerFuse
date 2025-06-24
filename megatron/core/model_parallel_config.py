@@ -78,6 +78,11 @@ class ModelParallelConfig:
     timers: Callable = None
     """Timers object to call for various timing functions. See megatron.core.timers.Timers"""
 
+    num_micro_batches_gard_factor: float = 0
+    """If this is not zero, the num micro batches per dp implementation would be used.
+       Defaults to 0.
+    """
+
     finalize_model_grads_func: Callable = None
     """Function that finalizes gradients on all workers. Could include ensuring that grads are
        all-reduced across data parallelism, pipeline parallelism, and sequence parallelism
