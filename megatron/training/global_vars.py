@@ -86,6 +86,9 @@ def set_global_variables(args, build_tokenizer=True):
         args.global_batch_size,
         args.micro_batch_size,
         args.data_parallel_size,
+        args.num_micro_batches,
+        args.micro_batch_size_per_dp,
+        args.data_parallel_splits,
     )
     if build_tokenizer:
         _ = _build_tokenizer(args)

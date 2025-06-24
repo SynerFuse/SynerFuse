@@ -242,6 +242,81 @@ def validate_args(args, defaults={}):
                   f'of "{legacy_default_split_value}"')
         args.split = legacy_default_split_value
 
+    if args.micro_batch_size_per_dp is not None:
+        assert args.micro_batch_size == None, \
+            'micro-batch-size must be None when use micro-batch-size-per-dp!'
+        assert args.context_parallel_size * args.expert_model_parallel_size == 1, \
+            "context parallel and expert model parallel can't be used with tp-pp-dp mapping."
+        assert args.dataloader_type == None or args.dataloader_type == 'single', \
+            "dataloader_type must be None or single when using micro_batch_size_per_dp."
+        assert args.use_tp_pp_dp_mapping == True, \
+            "use_tp_pp_dp_mapping must be True when using micro_batch_size_per_dp."
+
+        data_parallel_split = args.micro_batch_size_per_dp[::2]
+        micro_batch_sizes_split = args.micro_batch_size_per_dp[1::2]
+        total_micro_batch_sizes_split = [micro_batch_sizes_split[i] for i, j in enumerate(data_parallel_split) for _ in range(j)]
+        args.data_parallel_splits = data_parallel_split
+        args.micro_batch_size_per_dp = micro_batch_sizes_split
+        args.num_micro_batches = None
+        args.num_micro_batches_grad_factor = 0.
+        
+        assert sum(data_parallel_split) == args.data_parallel_size, \
+            'the length of micro_batch_size_per_dp (equal to sum of n0, n1, ... ) should be equal to data-parallel-size.'
+
+        if args.num_micro_batches_per_dp is not None:
+            num_microbatches_splits = args.num_micro_batches_per_dp[1::2]
+            num_microbatches_data_parallel_splits = args.num_micro_batches_per_dp[::2]
+            args.num_micro_batches_per_dp = num_microbatches_splits
+
+            assert sum(num_microbatches_data_parallel_splits) == args.data_parallel_size , \
+                "the length of num_micro_batches_per_dp (equal to sum of 'n0, n1, ...') should be equal to data-parallel-size."
+            assert num_microbatches_data_parallel_splits == data_parallel_split, \
+                "num micro batches' data parallel splits should be equal to micro batch sizes' data parallel splits one by one." \
+                "for example: micro batch size per dp is (1 A 1 B) then num micro batches per dp should be (1 X 1 Y)."
+
+            total_num_microbatches_split = [num_microbatches_splits[i] for i, j in enumerate(num_microbatches_data_parallel_splits) for _ in range(j)]
+
+            nmbs_dict = {}
+            for i in num_microbatches_splits:
+                nmbs_dict[i] = 0
+            assert len(nmbs_dict) <= 2, \
+                "the number of heterogeneous devices in parameter num_micro_batches_per_dp should be less than or equal to 2." \
+                f'but get {len(nmbs_dict)} for num micro batches.' \
+                "it means there are more than 2 heterogeneous devices in parameter num_micro_batches_per_dp! that is not supported yet."
+
+            sum_micro_batches = sum([micro_batch_sizes_split[i] * total_num_microbatches_split[i] for i in range(len(micro_batch_sizes_split))])
+
+            assert args.rampup_batch_size is None, 'num_micro_batches_per_dp is not currently supported for use with rampup_batch_size.'
+
+        offset = args.tensor_model_parallel_size * args.pipeline_model_parallel_size
+        for i in range(1, args.data_parallel_size + 1):
+            if args.rank < i * offset:
+                args.micro_batch_size = total_micro_batch_sizes_split[i - 1]
+                if args.num_micro_batches_per_dp is not None:
+                    args.num_micro_batches = total_num_microbatches_split[i - 1]
+                    args.num_micro_batches_grad_factor = total_micro_batch_sizes_split[i - 1] * \
+                                                         total_num_microbatches_split[i - 1] / sum_micro_batches
+                break
+        if args.num_micro_batches_per_dp is None:
+            sum_of_micro_batch_sizes = sum(map(lambda x, y : x * y,
+                                            micro_batch_sizes_split,
+                                            data_parallel_split))
+            assert args.global_batch_size % sum_of_micro_batch_sizes == 0, \
+                'global batch size should be divisible by sum of micro batch size per dp! ' \
+                f'but get global batch size is {args.global_batch_size} and the sum of micro batch size per dp is {sum_of_micro_batch_sizes}.'
+        else:
+            sum_of_micro_batch_sizes = sum(map(lambda x, y, z : x * y * z,
+                                            micro_batch_sizes_split,
+                                            data_parallel_split,
+                                            num_microbatches_splits))
+            assert args.global_batch_size == sum_of_micro_batch_sizes, \
+                'global batch size should be equal to sum of micro batch size per dp! ' \
+                f'but get global batch size is {args.global_batch_size} and the sum of micro batch size per dp is {sum_of_micro_batch_sizes}.'
+        args.sum_micro_batch_sizes = sum_of_micro_batch_sizes
+    else:
+        args.num_micro_batches = None
+        args.data_parallel_splits = None
+
     # Batch size.
     assert args.micro_batch_size is not None
     assert args.micro_batch_size > 0
@@ -637,6 +712,10 @@ def core_transformer_config_from_args(args, config_class=None):
         kw_args['num_query_groups'] = args.num_query_groups
     else:
         kw_args['num_query_groups'] = None
+    if args.num_micro_batches_per_dp:
+        kw_args['num_micro_batches_gard_factor'] = args.num_micro_batches_grad_factor
+    else:
+        kw_args['num_micro_batches_gard_factor'] = 0
 
     # Return config.
     return config_class(**kw_args)
@@ -990,6 +1069,16 @@ def _add_training_args(parser):
                        'use micro-batch-size * data-parallel-size as the '
                        'global batch size. This choice will result in 1 for '
                        'number of micro-batches.')
+    group.add_argument('--micro-batch-size-per-dp', nargs='*', type=int, default=None,
+                       help='Incompatible with --num-layers-per-virtual-pipeline-stage.'
+                       '--micro-batch-size-per-dp must be in the form: n0 mbs0 n1 mbs1 ...'
+                       'The sum of n0, n1, ... should be equal to data-parallel-size.'
+                       'The main purpose of this argument is to support for heterogeneous pretraining.')
+    group.add_argument('--num-micro-batches-per-dp', nargs='*', type=int, default=None,
+                       help='This argument must be used with --micro-batch-sizes-per-dp.'
+                       '--num-micro-batches-per-dp must be in the form: n0 nmb0 n1 nmb1 ...'
+                       'The sum of n0, n1, ... should be equal to data-parallel-size.'
+                       'The main purpose of this argument is to support for heterogeneous pretraining.')
     group.add_argument('--rampup-batch-size', nargs='*', default=None,
                        help='Batch size ramp up with the following values:'
                        '  --rampup-batch-size <start batch size> '

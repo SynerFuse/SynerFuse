@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 
 # TODO: global_var merge into mcore?
 _GLOBAL_NUM_MICROBATCHES_CALCULATOR: Union[
-    'ConstantNumMicroBatchesCalculator', 'RampupBatchsizeNumMicroBatchesCalculator'
+    'ConstantNumMicroBatchesCalculator',
+    'ConstantNumMicroBatchesPerDPCalculator',
+    'RampupBatchsizeNumMicroBatchesCalculator'
 ] = None
 
 
@@ -73,6 +75,9 @@ def init_num_microbatches_calculator(
     global_batch_size: int,
     micro_batch_size: int,
     data_parallel_size: int,
+    num_micro_batches: Optional[int] = None,
+    micro_batch_size_per_dp: Optional[List[int]] = None,
+    data_parallel_splits: Optional[List[int]] = None
 ) -> None:
     """Initialize number of micro-batches calculator.
 
@@ -82,15 +87,24 @@ def init_num_microbatches_calculator(
         global_batch_size (int): Global batch size for the model.
         micro_batch_size (int): Micro batch size at initialization.
         data_parallel_size (int): Data parallel size.
+        num_micro_batches (int): Num micro batches for current dp group.
+        micro_batch_size_per_dp (list): Micro batch size for total dp groups.
+        data_parallel_splits (list): Split dp group from micro_batch_size_per_dp.
     """
     global _GLOBAL_NUM_MICROBATCHES_CALCULATOR
     assert (
         _GLOBAL_NUM_MICROBATCHES_CALCULATOR is None
     ), 'num microbatches calculator is already initialized.'
 
-    _GLOBAL_NUM_MICROBATCHES_CALCULATOR = build_num_microbatches_calculator(
-        rank, rampup_batch_size, global_batch_size, micro_batch_size, data_parallel_size
-    )
+    if micro_batch_size_per_dp is None:
+        _GLOBAL_NUM_MICROBATCHES_CALCULATOR = build_num_microbatches_calculator(
+            rank, rampup_batch_size, global_batch_size, micro_batch_size, data_parallel_size
+        )
+    else:
+        _GLOBAL_NUM_MICROBATCHES_CALCULATOR = build_num_microbatches_per_dp_calculator(
+            rank, rampup_batch_size, global_batch_size, micro_batch_size, data_parallel_size, 
+            num_micro_batches, micro_batch_size_per_dp, data_parallel_splits 
+        )
 
 
 def build_num_microbatches_calculator(
@@ -144,6 +158,34 @@ def build_num_microbatches_calculator(
 
     return num_microbatches_calculator
 
+def build_num_microbatches_per_dp_calculator(
+    rank: int,
+    rampup_batch_size: Optional[List[int]],
+    global_batch_size: int,
+    micro_batch_size: int,
+    data_parallel_size: int,
+    num_micro_batches: Optional[int] = None,
+    micro_batch_size_per_dp: Optional[List[int]] = None,
+    data_parallel_splits: Optional[List[int]] = None
+) -> Union['ConstantNumMicroBatchesPerDPCalculator']:
+
+    # Constant num micro-batches per dp.
+    assert rampup_batch_size is None, \
+        'rampup batch size should be None when using num micro batches per dp.'
+
+    num_microbatches_calculator = ConstantNumMicroBatchesPerDPCalculator(
+        global_batch_size,
+        num_micro_batches,
+        micro_batch_size,
+        data_parallel_size,
+        micro_batch_size_per_dp,
+        data_parallel_splits)
+
+    if rank == 0:
+        print('setting number of micro-batches to constant {}'.format(
+            num_microbatches_calculator.get()), flush=True)
+
+    return num_microbatches_calculator
 
 class NumMicroBatchesCalculator(ABC):
     """Base class for number of micro-batches calculator."""
@@ -193,6 +235,36 @@ class ConstantNumMicroBatchesCalculator(NumMicroBatchesCalculator):
 
         self.current_global_batch_size = global_batch_size
         self.micro_batch_size = micro_batch_size
+
+    def update(self, consumed_samples, consistency_check) -> None:
+        pass
+
+class ConstantNumMicroBatchesPerDPCalculator(NumMicroBatchesCalculator):
+
+    def __init__(self, global_batch_size, num_micro_batches, micro_batch_size,
+                 data_parallel_size, micro_batch_size_per_dp, data_parallel_splits
+    ) -> None:
+
+        self.micro_batch_size = micro_batch_size
+        self.data_parallel_size = data_parallel_size
+        micro_batch_for_all_data_parallel = sum(map(lambda x, y: x * y,
+                                                    micro_batch_size_per_dp,
+                                                    data_parallel_splits))
+
+        if num_micro_batches is None:
+            assert global_batch_size % micro_batch_for_all_data_parallel == 0, \
+            'global batch size ({}) is not divisible by the sum of micro batch size ({})' \
+            ' times data parallel size ({})'.format(global_batch_size,
+                                                    micro_batch_size_per_dp,
+                                                    data_parallel_splits)
+
+            self.num_micro_batches = global_batch_size // micro_batch_for_all_data_parallel
+        else:
+            self.num_micro_batches = num_micro_batches
+
+        assert self.num_micro_batches >= 1
+
+        self.current_global_batch_size = global_batch_size
 
     def update(self, consumed_samples, consistency_check) -> None:
         pass

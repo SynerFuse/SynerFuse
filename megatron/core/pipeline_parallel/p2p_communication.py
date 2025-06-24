@@ -349,6 +349,9 @@ def _communicate(
     elif config.batch_p2p_comm:
         assert wait_on_reqs
         p2p_func = _batched_p2p_ops
+        # _batched_p2p_ops is not support for num micro batches per dp currently.
+        if config.num_micro_batches_gard_factor != 0:
+            p2p_func = _p2p_ops
     else:
         p2p_func = _p2p_ops
 

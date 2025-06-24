@@ -618,9 +618,16 @@ def train_step(forward_step_func, data_iterator,
 
     # Update learning rate.
     if update_successful:
-        increment = get_num_microbatches() * \
-                    args.micro_batch_size * \
-                    args.data_parallel_size
+        if args.micro_batch_size_per_dp is None:
+            increment = get_num_microbatches() * \
+                        args.micro_batch_size * \
+                        args.data_parallel_size
+        else:
+            if args.num_micro_batches_per_dp is None:
+                increment = get_num_microbatches() * \
+                            args.sum_micro_batch_sizes
+            else:
+                increment = args.global_batch_size
         opt_param_scheduler.step(increment=increment)
         skipped_iter = 0
     else:
@@ -648,6 +655,13 @@ def train_step(forward_step_func, data_iterator,
                     # and so the denominator is 1.
                     numerator += val
                     denominator += 1
+            if args.num_micro_batches_per_dp is not None:
+                all_numerator_on_dps = [torch.zeros(1).cuda() for _ in range(args.data_parallel_size)]
+                all_denominator_on_dps = [torch.zeros(1).cuda() for _ in range(args.data_parallel_size)]
+                torch.distributed.all_gather(all_numerator_on_dps, numerator, group=mpu.get_data_parallel_group())
+                torch.distributed.all_gather(all_denominator_on_dps, denominator, group=mpu.get_data_parallel_group())
+                numerator = sum(all_numerator_on_dps)
+                denominator = sum(all_denominator_on_dps)
             loss_reduced[key] = numerator / denominator
         return loss_reduced, skipped_iter, grad_norm, num_zeros_in_grad
     return {}, skipped_iter, grad_norm, num_zeros_in_grad
@@ -720,8 +734,14 @@ def training_log(loss_dict, total_loss_dict, learning_rate, decoupled_learning_r
         'optimizer']
 
     # Calculate batch size.
-    batch_size = args.micro_batch_size * args.data_parallel_size * \
-        get_num_microbatches()
+    if args.micro_batch_size_per_dp is None:
+        batch_size = args.micro_batch_size * args.data_parallel_size * \
+            get_num_microbatches()
+    else:
+        if args.num_micro_batches_per_dp is None:
+            batch_size = args.sum_micro_batch_sizes * get_num_microbatches()
+        else:
+            batch_size = args.global_batch_size
 
     # Track app tag & app tag ID
     one_logger_utils.track_app_tag(batch_size, args.world_size, args.seq_length)
@@ -1090,9 +1110,18 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
                        opt_param_scheduler,
                        config)
         iteration += 1
-        batch_size = mpu.get_data_parallel_world_size() * \
+        if args.micro_batch_size_per_dp is None:
+            batch_size = mpu.get_data_parallel_world_size() * \
                      args.micro_batch_size * \
                      get_num_microbatches()
+        else:
+            if args.num_micro_batches_per_dp is None:
+                batch_size = args.sum_micro_batch_sizes * get_num_microbatches()
+            else:
+                batch_size = args.global_batch_size
+        # batch_size = mpu.get_data_parallel_world_size() * \
+        #              args.micro_batch_size * \
+        #              get_num_microbatches()
         args.consumed_train_samples += batch_size
         num_fp_ops = num_floating_point_operations(args, batch_size)
         num_floating_point_operations_so_far += num_fp_ops
@@ -1275,8 +1304,11 @@ def evaluate(forward_step_func,
 
     # make validation batch size independent from training batch size
     eval_batch_size = args.global_batch_size
-    eval_num_microbatches = eval_batch_size // \
-        (args.micro_batch_size * args.data_parallel_size)
+    if args.micro_batch_size_per_dp is None:
+        eval_num_microbatches = eval_batch_size // \
+            (args.micro_batch_size * args.data_parallel_size)
+    else:
+        eval_num_microbatches = eval_batch_size // args.sum_micro_batch_sizes
 
     with torch.no_grad():
         iteration = 0
