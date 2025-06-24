@@ -1360,6 +1360,19 @@ def _get_num_layers(args, model_type, is_decoder=False):
             num_layers = args.decoder_num_layers
     return num_layers
 
+def _get_layer_info(args):
+    assert args.hetero_pipeline_stages is not None, "Only pipeline parallelism is supported."
+    pipeline_rank = mpu.get_pipeline_model_parallel_rank()
+    pipeline_stages = [item for sublist in args.hetero_pipeline_stages for item in sublist]
+    offset = sum(([0] + pipeline_stages)[: pipeline_rank + 1])
+    num_layers = pipeline_stages[pipeline_rank]
+    torch.distributed.barrier()
+    for i in range(torch.distributed.get_world_size()):
+        if i == torch.distributed.get_rank():
+            print("pipeline_rank:", pipeline_rank, "offset:", offset, "num_layers:", num_layers, flush=True)
+        torch.distributed.barrier()
+    return offset, num_layers
+
 
 def _get_layer_type(model_type, default_layer_type, retro_layer_numbers,
                     layer_number):
@@ -1403,11 +1416,42 @@ class ParallelTransformer(MegatronModule):
         self.retro_add_retriever = args.retro_add_retriever
 
         # Store activation checkpoiting flag.
-        self.recompute_granularity = config.recompute_granularity
-        self.recompute_method = config.recompute_method
-        self.recompute_num_layers = config.recompute_num_layers
+        # self.recompute_granularity = config.recompute_granularity
+        # self.recompute_method = config.recompute_method
+        # self.recompute_num_layers = config.recompute_num_layers
+        if args.recompute_method_per_stage != None:
+            if args.virtual_pipeline_model_parallel_size != None:
+                if args.recompute_method_per_stage[
+                    mpu.get_virtual_pipeline_model_parallel_rank() * args.pipeline_model_parallel_size + mpu.get_pipeline_model_parallel_rank()] == 0:
+                    self.recompute_method = 'uniform'
+                elif args.recompute_method_per_stage[
+                    mpu.get_virtual_pipeline_model_parallel_rank() * args.pipeline_model_parallel_size + mpu.get_pipeline_model_parallel_rank()] == 1:
+                    self.recompute_method = 'block'
+            else:
+                if args.recompute_method_per_stage[mpu.get_pipeline_model_parallel_rank()] == 0:
+                    self.recompute_method = 'uniform'
+                elif args.recompute_method_per_stage[mpu.get_pipeline_model_parallel_rank()] == 1:
+                    self.recompute_method = 'block'
+        else:
+            self.recompute_method = config.recompute_method
+
+        if args.recompute_num_layers_per_stage != None:
+            if args.virtual_pipeline_model_parallel_size != None:
+                self.recompute_num_layers = args.recompute_num_layers_per_stage[
+                    mpu.get_virtual_pipeline_model_parallel_rank() * args.pipeline_model_parallel_size + mpu.get_pipeline_model_parallel_rank()]
+            else:
+                self.recompute_num_layers = args.recompute_num_layers_per_stage[mpu.get_pipeline_model_parallel_rank()]
+        else:
+            self.recompute_num_layers = config.recompute_num_layers
         self.distribute_saved_activations = \
             config.distribute_saved_activations and not config.sequence_parallel
+
+        if args.recompute_granularity_per_stage != None and args.recompute_granularity_per_stage[
+            mpu.get_pipeline_model_parallel_rank()] == 0:
+            self.recompute_granularity = None
+            self.recompute_method = None
+        else:
+            self.recompute_granularity = config.recompute_granularity
 
         self.sequence_parallel = config.sequence_parallel
 
@@ -1460,8 +1504,11 @@ class ParallelTransformer(MegatronModule):
         self.checkpoint_core_attention = config.recompute_granularity == 'selective'
 
         # Number of layers.
-        self.num_layers = _get_num_layers(args, model_type,
-                                          layer_type==LayerType.decoder)
+        if args.hetero_pipeline_stages is None:
+            self.num_layers = _get_num_layers(args, model_type,
+                                              layer_type == LayerType.decoder)
+        else:
+            offset, self.num_layers = _get_layer_info(args)
 
         self.drop_path_rates = [
             rate.item() for rate in
@@ -1541,6 +1588,8 @@ class ParallelTransformer(MegatronModule):
                 'num_layers_per_stage must be divisible by ' \
                 'virtual_pipeline_model_parallel_size'
             assert args.model_type != ModelType.encoder_and_decoder
+            assert args.hetero_pipeline_stages is None, \
+                "Heterogenous pipeline parallelism is not supported for virtual pipeline model parallel."
             # Number of layers in each model chunk is the number of layers in the stage,
             # divided by the number of model chunks in a stage.
             self.num_layers = self.num_layers // config.virtual_pipeline_model_parallel_size
@@ -1559,6 +1608,8 @@ class ParallelTransformer(MegatronModule):
             # Each stage gets a contiguous set of layers.
             if args.model_type == ModelType.encoder_and_decoder and \
                     mpu.get_pipeline_model_parallel_world_size() > 1:
+                assert args.hetero_pipeline_stages is None, \
+                    "Heterogenous pipeline parallelism is not supported for encoder-decoder models."
                 pipeline_rank = mpu.get_pipeline_model_parallel_rank()
                 if layer_type == LayerType.encoder:
                     offset = pipeline_rank * self.num_layers
@@ -1566,7 +1617,10 @@ class ParallelTransformer(MegatronModule):
                     num_ranks_in_enc = args.pipeline_model_parallel_split_rank
                     offset = (pipeline_rank - num_ranks_in_enc) * self.num_layers
             else:
-                offset = mpu.get_pipeline_model_parallel_rank() * self.num_layers
+                if args.hetero_pipeline_stages is None:
+                    offset = mpu.get_pipeline_model_parallel_rank() * self.num_layers
+                else:
+                    offset, self.num_layers = _get_layer_info(args)
 
         if self.num_layers == 0:
             # When a standalone embedding stage is used (e.g.,
@@ -1579,6 +1633,7 @@ class ParallelTransformer(MegatronModule):
             # disconnect the input tensor from the output tensor.
             self.num_layers = 1
             self.layers = torch.nn.ModuleList([ NoopTransformerLayer(1) ])
+            self.recompute_granularity = None
         else:
             self.layers = torch.nn.ModuleList(
                 [build_layer(i + 1 + offset) for i in range(self.num_layers)])
