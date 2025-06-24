@@ -136,6 +136,7 @@ class DistributedDataParallel(MegatronModule):
                         self.bucket_size,
                         param_to_name,
                         gradient_scaling_factor,
+                        config.num_micro_batches_gard_factor
                     )
                 )
                 for param in params:

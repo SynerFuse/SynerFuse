@@ -79,6 +79,10 @@ _DATA_PARALLEL_GROUP_WITH_CP = None
 _DATA_PARALLEL_GROUP_WITH_CP_GLOO = None
 _DATA_PARALLEL_GLOBAL_RANKS_WITH_CP = None
 
+# Data parallel device group that the current rank belongs to.
+# used for unbalance numbers of micro batch mixed pretraininig
+_DATA_PARALLEL_DEVICE_GROUP = None
+
 # combined parallel group of TP and CP
 _TENSOR_AND_CONTEXT_PARALLEL_GROUP = None
 
@@ -315,6 +319,7 @@ def initialize_model_parallel(
     nccl_communicator_config_path: Optional[str] = None,
     distributed_timeout_minutes: int = 30,
     order: str = "tp-cp-ep-dp-pp",
+    data_parallel_splits: List = None,
 ) -> None:
     """Initialize model data parallel groups.
 
@@ -482,6 +487,8 @@ def initialize_model_parallel(
         order=order,
     )
     timeout = timedelta(minutes=distributed_timeout_minutes)
+    dp_device_groups_prev = []
+    dp_device_groups_next = []
 
     # Build the data-parallel groups.
     global _DATA_PARALLEL_GROUP
@@ -490,6 +497,7 @@ def initialize_model_parallel(
     global _DATA_PARALLEL_GROUP_WITH_CP
     global _DATA_PARALLEL_GROUP_WITH_CP_GLOO
     global _DATA_PARALLEL_GLOBAL_RANKS_WITH_CP
+    global _DATA_PARALLEL_DEVICE_GROUP
     assert _DATA_PARALLEL_GROUP is None, 'data parallel group is already initialized'
 
     for ranks in rank_generator.get_ranks('dp'):
@@ -497,10 +505,24 @@ def initialize_model_parallel(
             ranks, timeout=timeout, pg_options=get_nccl_options('dp', nccl_comm_cfgs)
         )
         group_gloo = torch.distributed.new_group(ranks, timeout=timeout, backend="gloo")
+        if data_parallel_splits is not None:
+            dp_device_groups_prev.append(ranks[:data_parallel_splits[0]])
+            group_device_prev = torch.distributed.new_group(
+                ranks[:data_parallel_splits[0]], pg_options=get_nccl_options('dp-device-prev', nccl_comm_cfgs)
+            )
+            dp_device_groups_next.append(ranks[data_parallel_splits[0]:])
+            group_device_next = torch.distributed.new_group(
+                ranks[data_parallel_splits[0]:], pg_options=get_nccl_options('dp-device-next', nccl_comm_cfgs)
+            )
         if rank in ranks:
             _DATA_PARALLEL_GROUP = group
             _DATA_PARALLEL_GROUP_GLOO = group_gloo
             _DATA_PARALLEL_GLOBAL_RANKS = ranks
+            if data_parallel_splits is not None:
+                if rank in ranks[:data_parallel_splits[0]]:
+                    _DATA_PARALLEL_DEVICE_GROUP = group_device_prev
+                else:
+                    _DATA_PARALLEL_DEVICE_GROUP = group_device_next
     for ranks_with_cp in rank_generator.get_ranks('dp-cp'):
         group_with_cp = torch.distributed.new_group(
             ranks_with_cp, timeout=timeout, pg_options=get_nccl_options('dp_cp', nccl_comm_cfgs)
@@ -799,6 +821,11 @@ def get_data_parallel_group(with_context_parallel=False):
         assert _DATA_PARALLEL_GROUP is not None, 'data parallel group is not initialized'
         return _DATA_PARALLEL_GROUP
 
+def get_data_parallel_device_group():
+    """Get the data parallel device group the caller rank belongs to."""
+    assert _DATA_PARALLEL_DEVICE_GROUP is not None, \
+        'data parallel group with device division is not initialized'
+    return _DATA_PARALLEL_DEVICE_GROUP
 
 def get_data_parallel_group_gloo(with_context_parallel=False):
     """Get the data parallel group-gloo the caller rank belongs to."""
@@ -1355,3 +1382,5 @@ def destroy_model_parallel():
     _DATA_MODULO_EXPERT_PARALLEL_GROUP_GLOO = None
     global _DATA_MODULO_EXPERT_PARALLEL_GROUP_WITH_CP_GLOO
     _DATA_MODULO_EXPERT_PARALLEL_GROUP_WITH_CP_GLOO = None
+    global _DATA_PARALLEL_DEVICE_GROUP
+    _DATA_PARALLEL_DEVICE_GROUP = None
