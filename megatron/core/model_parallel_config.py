@@ -1,7 +1,7 @@
 # Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
 
 from dataclasses import dataclass
-from typing import Callable, ContextManager, Optional
+from typing import Callable, ContextManager, Optional, List
 
 import torch
 
@@ -34,6 +34,33 @@ class ModelParallelConfig:
     """Makes tensor parallelism more memory efficient for LLMs (20B+) by parallelizing layer norms
        and dropout sequentially.  See Reducing Activation Recomputation in Large Transformer Models
        (https://arxiv.org/abs/2205.05198) for more details.
+    """
+
+    hetero_pipeline_stages: Optional[List[List[int]]] = None
+    """Incompatible with --num-layers-per-virtual-pipeline-stage.
+       hetero-pipeline-stages must be in the form:
+       n0 layers_0_0 layers_0_1 ... n1 nlayers_1_0 nlayers_1_1 ...
+       The order should be consistent with --hetero-device-types.
+    """
+
+    recompute_granularity_per_stage: Optional[List[int]] = None
+    """used with recompute-granularity=full, setting recompute granularity'
+       of each stage. This argument must be in the form: n0, flag0, n1, flag1,...'
+       the sum of n0, n1, ... should be equal to pipeline-model-parallel-size.'
+       granularity flag: 0 means turning off full recompute, 1 means turning on
+    """
+
+    recompute_method_per_stage: Optional[List[int]] = None
+    """used with recompute-granularity=full, setting recompute method 
+       of each stage. This argument must be in the form: n0, method0, n1, method1, ...
+       the sum of n0, n1, ... should be equal to pipeline-model-parallel-size.
+       method: 0 means uniform, 1 means block
+    """
+
+    recompute_num_layers_per_stage: Optional[List[int]] = None
+    """used with recompute-granularity=full, setting recompute num layers 
+       of each stage. This argument must be in the form: n0, layers0, n1, layers1, ...
+       the sum of n0, n1, ... should be equal to pipeline-model-parallel-size.
     """
 
     context_parallel_size: int = 1

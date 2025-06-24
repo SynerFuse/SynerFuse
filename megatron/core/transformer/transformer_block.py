@@ -52,6 +52,8 @@ def get_num_layers_to_build(config: TransformerConfig) -> int:
     )
 
     if parallel_state.get_virtual_pipeline_model_parallel_world_size() is not None:
+        assert config.hetero_pipeline_stages is None, \
+            "Heterogenous pipeline parallelism is not supported for virtual pipeline model parallel."
         # Interleaved pipeline parallelism:
         # Number of layers in each model chunk is the number of layers in the stage,
         # divided by the number of model chunks in a stage.
@@ -73,8 +75,13 @@ def get_num_layers_to_build(config: TransformerConfig) -> int:
     else:
         # Non-interleaved pipeline parallelism:
         # Each stage gets a contiguous set of layers.
-
-        num_layers_to_build = num_layers_per_pipeline_rank
+        if config.hetero_pipeline_stages is None:
+            num_layers_to_build = num_layers_per_pipeline_rank
+        else:
+            pipeline_rank = parallel_state.get_pipeline_model_parallel_rank()
+            pipeline_stages = [item for sublist in config.hetero_pipeline_stages for item in sublist]
+            num_layers_to_build = pipeline_stages[pipeline_rank]
+            torch.distributed.barrier()
 
     return num_layers_to_build
 
@@ -138,6 +145,39 @@ class TransformerBlock(MegatronModule):
 
         # required for pipeline parallel schedules
         self.input_tensor = None
+
+        if self.config.recompute_method_per_stage is not None:
+            if self.config.virtual_pipeline_model_parallel_size is not None:
+                if self.config.recompute_method_per_stage[
+                    parallel_state.get_virtual_pipeline_model_parallel_rank() *
+                    self.config.pipeline_model_parallel_size +
+                    parallel_state.get_pipeline_model_parallel_rank()] == 0:
+                    self.config.recompute_method = 'uniform'
+                elif self.config.recompute_method_per_stage[
+                    parallel_state.get_virtual_pipeline_model_parallel_rank() *
+                    self.config.pipeline_model_parallel_size +
+                    parallel_state.get_pipeline_model_parallel_rank()] == 1:
+                    self.config.recompute_method = 'block'
+            else:
+                if self.config.recompute_method_per_stage[parallel_state.get_pipeline_model_parallel_rank()] == 0:
+                    self.config.recompute_method = 'uniform'
+                elif self.config.recompute_method_per_stage[parallel_state.get_pipeline_model_parallel_rank()] == 1:
+                    self.config.recompute_method = 'block'
+
+        if self.config.recompute_num_layers_per_stage is not None:
+            if self.config.virtual_pipeline_model_parallel_size is not None:
+                self.config.recompute_num_layers = self.config.recompute_num_layers_per_stage[
+                    parallel_state.get_virtual_pipeline_model_parallel_rank() *
+                    self.config.pipeline_model_parallel_size +
+                    parallel_state.get_pipeline_model_parallel_rank()]
+            else:
+                self.config.recompute_num_layers = self.config.recompute_num_layers_per_stage[
+                    parallel_state.get_pipeline_model_parallel_rank()]
+
+        if self.config.recompute_granularity_per_stage is not None and self.config.recompute_granularity_per_stage[
+            parallel_state.get_pipeline_model_parallel_rank()] == 0:
+            self.config.recompute_granularity = None
+            self.config.recompute_method = None
 
         self.checkpoint_core_attention = self.config.recompute_granularity == 'selective'
 
