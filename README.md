@@ -1,60 +1,11 @@
 # SynerFuse
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10699/badge)](https://www.bestpractices.dev/projects/10699)
-## 异构配置方法
+## Latest News
+- [2025/6]SynerFuse publishes framework of Release 1.0, which can provide heterogeneous pipeline parallelism and heterogeneous data parallelism capabilities.
+- [2025/5] China Mobile has established the repository for SynerFuse and obtained the OpenSSF certification badge.
+## SynerFuse Overview
+Currently, the “resource wall” between different GPUs makes it difficult to build one heterogeneous resource pool for Large-scale models training. Heterogeneous distributed training becomes a pressing challenge for the industry to solve. We brought up a cross-architecture unified heterogeneous training framework SynerFuse to deal with the problem.
 
-### 异构DP配置
+SynerFuse enables multiple LLMs deployed and trained on multiple types of GPUs. The Inhomogeneous Task Distribution(ITD) algorithm for heterogeneous training task splitting is innovatively proposed, which supports heterogeneous data parallelism(DP) and heterogeneous pipeline parallelism(PP), and realizes the adaptive adjustment of parameters such as size and number of micro batches in DP, stages and layers in PP on heterogeneous GPUs.
 
-#### --use-tp-pp-dp-mapping 
-
-改变通信组顺序，让DP走异构。
-
-#### --micro-batch-size-per-dp
-
-为不同的数据并行组设置微批次大小。
-
-- 格式：`n0 mbs0 n1 mbs1 ...`
-
-  - `n0, n1, ...`：数据并行组内连续设备个数。
-  - `mbs0, mbs1, ...`：对应设备组的微批次大小。
-
-- 约束：
-  
-  $$
-  \sum_{i} n_i = \text{data-parallel-size}
-  $$
-
-  $$
-  \text{GBS} \mod \left( \sum_{i} n_i \times \text{mbs}_i \right) = 0
-  $$
-
-#### --num-micro-batches-per-dp
-
-为不同的数据并行组设置微批次数量。
-
-- 格式：`n0 nmb0 n1 nmb1 ...`
-
-  - `n0, n1, ...`：数据并行组内连续设备个数。
-  - `nmb0, nmb1, ...`：对应设备组的微批次数量。
-
-- 约束：
-
-$$
-\sum_{i} n_i = \text{data-parallel-size}
-$$
-
-$$
-\text{global-batch-size} = \sum_{i} n_i \times \text{mbs}_i \times \text{num-mbs}_i
-$$
-
----
-
-### 异构PP配置
-
-#### --hetero-pipeline-stages
-
-用于给不同的阶段配置不同的层数。
-
-- 格式：`n0 layers_0_0 layers_0_1 ... n1 layers_1_0 layers_1_1 ...`
-
-  - `n0` 表示第 0 个异构阶段的设备数量，后续跟随该阶段各层的层数；
-  - `n1` 表示第 1 个异构阶段的设备数量，后续跟随该阶段各层的层数，以此类推。
+We’ve verified our capability on Nvidia and other 4 types of GPUs. The acceleration ratio reached 95%, loss converges to 1.8 and PPL curve converged normally.
