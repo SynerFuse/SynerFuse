@@ -1,5 +1,5 @@
 # SynerFuse
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10699/badge)](https://www.bestpractices.dev/projects/10699)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10803/badge)](https://www.bestpractices.dev/projects/10803)
 ## Latest News
 - [2025/6]SynerFuse publishes framework of Release 1.0, which can provide heterogeneous pipeline parallelism and heterogeneous data parallelism capabilities.
 - [2025/5] China Mobile has established the repository for SynerFuse and obtained the OpenSSF certification badge.
