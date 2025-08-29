@@ -138,10 +138,13 @@ def finalize_model_grads(model: List[torch.nn.Module], num_tokens: Optional[torc
     if num_tokens is not None:
         # the number of tokens is only present on the last stage, so broadcast it
         # to the other ranks in the pipeline parallel group.
+        group = parallel_state.get_pipeline_model_parallel_group()
+        if "gloo" in group.name():
+            num_tokens = num_tokens.cpu()
         torch.distributed.broadcast(
             num_tokens,
             src=parallel_state.get_pipeline_model_parallel_last_rank(),
-            group=parallel_state.get_pipeline_model_parallel_group(),
+            group=group,
         )
         # all-reduce across DP ranks.
         torch.distributed.all_reduce(num_tokens, group=parallel_state.get_data_parallel_group())

@@ -10,6 +10,8 @@ import math
 import os
 import sys
 from .log_handler import CustomHandler
+from ..core.pipeline_parallel.p2p_communication import get_device_type_for_comm
+
 # Make default logging level INFO, but filter out all log messages not from MCore.
 logging.basicConfig(handlers=[CustomHandler()], level=logging.INFO)
 from .theoretical_memory_usage import report_theoretical_memory
@@ -206,9 +208,14 @@ def pretrain(train_valid_test_dataset_provider,
     # This will be closer to what scheduler will see (outside of
     # image ... launches.
     global _TRAIN_START_TIME
-    start_time_tensor = torch.tensor([_TRAIN_START_TIME],
-                                     dtype=torch.double,
-                                     device='cuda')
+    if "gloo" in torch.distributed.get_backend():
+        start_time_tensor = torch.tensor([_TRAIN_START_TIME],
+                                         dtype=torch.double,
+                                         device='cpu')
+    else:
+        start_time_tensor = torch.tensor([_TRAIN_START_TIME],
+                                         dtype=torch.double,
+                                         device='cuda')
     torch.distributed.all_reduce(start_time_tensor,
                                  op=torch.distributed.ReduceOp.MIN)
     _TRAIN_START_TIME = start_time_tensor.item()
@@ -1523,9 +1530,9 @@ def build_train_valid_test_data_loaders(
         do_test = test_dataloader is not None and args.eval_iters > 0
         flags = torch.tensor(
             [int(do_train), int(do_valid), int(do_test)],
-            dtype=torch.long, device='cuda')
+            dtype=torch.long, device=get_device_type_for_comm())
     else:
-        flags = torch.tensor([0, 0, 0], dtype=torch.long, device='cuda')
+        flags = torch.tensor([0, 0, 0], dtype=torch.long, device=get_device_type_for_comm())
 
     torch.distributed.broadcast(flags, 0)
 

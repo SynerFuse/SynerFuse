@@ -48,6 +48,7 @@ def parse_args(extra_args_provider=None, ignore_unknown_args=False):
     parser = _add_retro_args(parser)
     parser = _add_experimental_args(parser)
     parser = _add_one_logger_args(parser)
+    parser = _add_hetero_args(parser)
 
     # Custom arguments.
     if extra_args_provider is not None:
@@ -1165,16 +1166,6 @@ def _add_training_args(parser):
                        'use micro-batch-size * data-parallel-size as the '
                        'global batch size. This choice will result in 1 for '
                        'number of micro-batches.')
-    group.add_argument('--micro-batch-size-per-dp', nargs='*', type=int, default=None,
-                       help='Incompatible with --num-layers-per-virtual-pipeline-stage.'
-                       '--micro-batch-size-per-dp must be in the form: n0 mbs0 n1 mbs1 ...'
-                       'The sum of n0, n1, ... should be equal to data-parallel-size.'
-                       'The main purpose of this argument is to support for heterogeneous pretraining.')
-    group.add_argument('--num-micro-batches-per-dp', nargs='*', type=int, default=None,
-                       help='This argument must be used with --micro-batch-sizes-per-dp.'
-                       '--num-micro-batches-per-dp must be in the form: n0 nmb0 n1 nmb1 ...'
-                       'The sum of n0, n1, ... should be equal to data-parallel-size.'
-                       'The main purpose of this argument is to support for heterogeneous pretraining.')
     group.add_argument('--rampup-batch-size', nargs='*', default=None,
                        help='Batch size ramp up with the following values:'
                        '  --rampup-batch-size <start batch size> '
@@ -1219,25 +1210,6 @@ def _add_training_args(parser):
                        'uniformly divided recompute unit, '
                        '2) block: the number of individual Transformer layers '
                        'to recompute within each pipeline stage.')
-    group.add_argument('--hetero-pipeline-stages', nargs='*', type=int, default=None,
-                       help='Incompatible with --num-layers-per-virtual-pipeline-stage.'
-                            'hetero-pipeline-stages must be in the form:'
-                            'n0 layers_0_0 layers_0_1 ... n1 nlayers_1_0 nlayers_1_1 ...'
-                            'The order should be consistent with --hetero-device-types.')
-    group.add_argument('--recompute-granularity-per-stage', nargs='*', type=int, default=None,
-                       help='used with recompute-granularity=full, setting recompute granularity'
-                            'of each stage. This argument must be in the form: n0, flag0, n1, flag1,...'
-                            'the sum of n0, n1, ... should be equal to pipeline-model-parallel-size.'
-                            'granularity flag: 0 means turning off full recompute, 1 means turning on')
-    group.add_argument('--recompute-method-per-stage', nargs='*', type=int, default=None,
-                       help='used with recompute-granularity=full, setting recompute method '
-                            'of each stage. This argument must be in the form: n0, method0, n1, method1, ...'
-                            'the sum of n0, n1, ... should be equal to pipeline-model-parallel-size.'
-                            'method: 0 means uniform, 1 means block')
-    group.add_argument('--recompute-num-layers-per-stage', nargs='*', type=int, default=None,
-                       help='used with recompute-granularity=full, setting recompute num layers '
-                            'of each stage. This argument must be in the form: n0, layers0, n1, layers1, ...'
-                            'the sum of n0, n1, ... should be equal to pipeline-model-parallel-size.')
     group.add_argument('--no-clone-scatter-output-in-embedding', action='store_false',
                        help='If not set, clone the output of the scatter in embedding layer to GC original tensor.',
                        dest='clone_scatter_output_in_embedding')
@@ -1993,5 +1965,43 @@ def _add_experimental_args(parser):
                        'pattern')
     group.add_argument('--yaml-cfg', type=str, default=None,
                        help = 'Config file to add additional arguments')
+
+    return parser
+
+
+def _add_hetero_args(parser):
+    group = parser.add_argument_group(title="heterogeneous training")
+
+    group.add_argument('--hetero-use-cpu-communication', action='store_true',
+                       help='Use CPU for communication for heterogeneous communication.')
+    group.add_argument('--micro-batch-size-per-dp', nargs='*', type=int, default=None,
+                       help='Incompatible with --num-layers-per-virtual-pipeline-stage.'
+                            '--micro-batch-size-per-dp must be in the form: n0 mbs0 n1 mbs1 ...'
+                            'The sum of n0, n1, ... should be equal to data-parallel-size.'
+                            'The main purpose of this argument is to support for heterogeneous pretraining.')
+    group.add_argument('--num-micro-batches-per-dp', nargs='*', type=int, default=None,
+                       help='This argument must be used with --micro-batch-sizes-per-dp.'
+                            '--num-micro-batches-per-dp must be in the form: n0 nmb0 n1 nmb1 ...'
+                            'The sum of n0, n1, ... should be equal to data-parallel-size.'
+                            'The main purpose of this argument is to support for heterogeneous pretraining.')
+    group.add_argument('--hetero-pipeline-stages', nargs='*', type=int, default=None,
+                       help='Incompatible with --num-layers-per-virtual-pipeline-stage.'
+                            'hetero-pipeline-stages must be in the form:'
+                            'n0 layers_0_0 layers_0_1 ... n1 nlayers_1_0 nlayers_1_1 ...'
+                            'The order should be consistent with --hetero-device-types.')
+    group.add_argument('--recompute-granularity-per-stage', nargs='*', type=int, default=None,
+                       help='used with recompute-granularity=full, setting recompute granularity'
+                            'of each stage. This argument must be in the form: n0, flag0, n1, flag1,...'
+                            'the sum of n0, n1, ... should be equal to pipeline-model-parallel-size.'
+                            'granularity flag: 0 means turning off full recompute, 1 means turning on')
+    group.add_argument('--recompute-method-per-stage', nargs='*', type=int, default=None,
+                       help='used with recompute-granularity=full, setting recompute method '
+                            'of each stage. This argument must be in the form: n0, method0, n1, method1, ...'
+                            'the sum of n0, n1, ... should be equal to pipeline-model-parallel-size.'
+                            'method: 0 means uniform, 1 means block')
+    group.add_argument('--recompute-num-layers-per-stage', nargs='*', type=int, default=None,
+                       help='used with recompute-granularity=full, setting recompute num layers '
+                            'of each stage. This argument must be in the form: n0, layers0, n1, layers1, ...'
+                            'the sum of n0, n1, ... should be equal to pipeline-model-parallel-size.')
 
     return parser
