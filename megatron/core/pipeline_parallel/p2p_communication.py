@@ -20,6 +20,15 @@ from megatron.core.parallel_state import (
 Shape = Union[List[int], torch.Size]
 
 
+def get_device_type_for_comm(model_parallel_group=None):
+    device = 'cuda'
+    # "cpu:gloo": gloo only supports cpu tensor.
+    # "gloo" & "cpu:gloo,cuda:gloo": gloo supports both cpu and cuda tensor.
+    if 'gloo' in torch.distributed.get_backend(model_parallel_group):
+        device = 'cpu'
+    return device
+
+
 def _communicate_shapes(tensor_send_next, tensor_send_prev, recv_prev, recv_next, config):
     """Communicate tensor shapes between stages. Used to communicate
     tensor shapes before the actual tensor communication happens.
@@ -261,7 +270,8 @@ def _communicate(
     recv_next: bool,
     tensor_shape: Shape,
     config: ModelParallelConfig,
-    wait_on_reqs: bool = True
+    wait_on_reqs: bool = True,
+    group: torch.distributed.ProcessGroup = None
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Communicate tensors between stages. Used as helper method in other
     communication methods that are used in megatron/schedules.py.
@@ -320,7 +330,7 @@ def _communicate(
         tensor_recv_prev = torch.empty(
             recv_prev_shape,
             requires_grad=True,
-            device=torch.cuda.current_device(),
+            device=torch.cuda.current_device() if "gloo" not in group.name() else torch.device("cpu"),
             dtype=config.pipeline_dtype,
         )
     if recv_next:
@@ -334,7 +344,7 @@ def _communicate(
         tensor_recv_next = torch.empty(
             recv_next_shape,
             requires_grad=True,
-            device=torch.cuda.current_device(),
+            device=torch.cuda.current_device() if "gloo" not in group.name() else torch.device("cpu"),
             dtype=config.pipeline_dtype,
         )
 
@@ -394,9 +404,12 @@ def recv_forward(tensor_shape: Shape, config: ModelParallelConfig) -> torch.Tens
             recv_next=False,
             tensor_shape=tensor_shape,
             config=config,
+            group=get_pipeline_model_parallel_group(),
         )
         if config.timers is not None:
             config.timers('forward-recv').stop()
+    if input_tensor is not None and input_tensor.device == torch.device("cpu"):
+        input_tensor = input_tensor.to(torch.cuda.current_device())
     return input_tensor
 
 
@@ -417,9 +430,12 @@ def recv_backward(tensor_shape: Shape, config: ModelParallelConfig) -> torch.Ten
             recv_next=True,
             tensor_shape=tensor_shape,
             config=config,
+            group=get_pipeline_model_parallel_group(),
         )
         if config.timers is not None:
             config.timers('backward-recv').stop()
+    if output_tensor_grad is not None and output_tensor_grad.device == torch.device("cpu"):
+        output_tensor_grad = output_tensor_grad.to(torch.cuda.current_device())
     return output_tensor_grad
 
 
@@ -432,13 +448,15 @@ def send_forward(output_tensor: torch.Tensor, config: ModelParallelConfig) -> No
     if not core.parallel_state.is_pipeline_last_stage():
         if config.timers is not None:
             config.timers('forward-send', log_level=2).start()
+        group = get_pipeline_model_parallel_group()
         _communicate(
-            tensor_send_next=output_tensor,
+            tensor_send_next=output_tensor if "gloo" not in group.name() else output_tensor.cpu(),
             tensor_send_prev=None,
             recv_prev=False,
             recv_next=False,
             tensor_shape=None,
             config=config,
+            group=group,
         )
         if config.timers is not None:
             config.timers('forward-send').stop()
@@ -452,13 +470,15 @@ def send_backward(input_tensor_grad: torch.Tensor, config: ModelParallelConfig) 
     if not core.parallel_state.is_pipeline_first_stage():
         if config.timers is not None:
             config.timers('backward-send', log_level=2).start()
+        group = get_pipeline_model_parallel_group()
         _communicate(
             tensor_send_next=None,
-            tensor_send_prev=input_tensor_grad,
+            tensor_send_prev=input_tensor_grad if "gloo" not in group.name() else input_tensor_grad.cpu(),
             recv_prev=False,
             recv_next=False,
             tensor_shape=None,
             config=config,
+            group=group,
         )
         if config.timers is not None:
             config.timers('backward-send').stop()
@@ -476,16 +496,20 @@ def send_forward_recv_backward(
     else:
         if config.timers is not None:
             config.timers('forward-send-backward-recv', log_level=2).start()
+        group = get_pipeline_model_parallel_group()
         _, output_tensor_grad, _ = _communicate(
-            tensor_send_next=output_tensor,
+            tensor_send_next=output_tensor if "gloo" not in group.name() else output_tensor.cpu(),
             tensor_send_prev=None,
             recv_prev=False,
             recv_next=True,
             tensor_shape=tensor_shape,
             config=config,
+            group=group,
         )
         if config.timers is not None:
             config.timers('forward-send-backward-recv').stop()
+    if output_tensor_grad is not None and output_tensor_grad.device == torch.device("cpu"):
+        output_tensor_grad = output_tensor_grad.to(torch.cuda.current_device())
     return output_tensor_grad
 
 
@@ -501,16 +525,20 @@ def send_backward_recv_forward(
     else:
         if config.timers is not None:
             config.timers('backward-send-forward-recv', log_level=2).start()
+        group = get_pipeline_model_parallel_group()
         input_tensor, _, _ = _communicate(
             tensor_send_next=None,
-            tensor_send_prev=input_tensor_grad,
+            tensor_send_prev=input_tensor_grad if "gloo" not in group.name() else input_tensor_grad.cpu(),
             recv_prev=True,
             recv_next=False,
             tensor_shape=tensor_shape,
             config=config,
+            group=group
         )
         if config.timers is not None:
             config.timers('backward-send-forward-recv').stop()
+    if input_tensor is not None and input_tensor.device == torch.device("cpu"):
+        input_tensor = input_tensor.to(torch.cuda.current_device())
     return input_tensor
 
 
