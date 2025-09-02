@@ -298,11 +298,15 @@ class DistributedDataParallel(MegatronModule):
                 data_parallel_group = parallel_state.get_data_parallel_group(
                     with_context_parallel=True
                 )
+            if "cpu:gloo" == torch.distributed.get_backend(group=data_parallel_group):
+                param.data = param.data.cpu()
             torch.distributed.broadcast(
                 param.data,
                 src=torch.distributed.get_global_rank(data_parallel_group, 0),
                 group=data_parallel_group,
             )
+            if "cpu:gloo" == torch.distributed.get_backend(group=data_parallel_group):
+                param.data = param.data.cuda(torch.cuda.current_device())
 
     def state_dict(self, prefix='', keep_vars=False):
         """

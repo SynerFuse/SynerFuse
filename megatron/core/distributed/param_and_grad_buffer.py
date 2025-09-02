@@ -139,6 +139,8 @@ class Bucket:
         if self.num_micro_batches_gard_factor != 0:
             self.grad_data *= self.num_micro_batches_gard_factor
 
+        if "cpu:gloo" == torch.distributed.get_backend(group=self.data_parallel_group):
+            self.grad_data = self.grad_data.cpu()
         # Use async_op only when overlap_grad_reduce is True.
         if self.ddp_config.use_distributed_optimizer:
             local_data_view = shard_buffer(self.grad_data, self.data_parallel_world_size)[
@@ -158,6 +160,10 @@ class Bucket:
                 group=self.data_parallel_group,
                 async_op=self.ddp_config.overlap_grad_reduce,
             )
+        if "cpu:gloo" == torch.distributed.get_backend(group=self.data_parallel_group):
+            if self.ddp_config.overlap_grad_reduce:
+                self.communication_handle.wait()
+            self.grad_data = self.grad_data.cuda(torch.cuda.current_device())
         if self.ddp_config.overlap_grad_reduce:
             self.is_communication_outstanding = True
         else:
