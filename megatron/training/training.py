@@ -663,10 +663,13 @@ def train_step(forward_step_func, data_iterator,
                     numerator += val
                     denominator += 1
             if args.num_micro_batches_per_dp is not None:
-                all_numerator_on_dps = [torch.zeros(1).cuda() for _ in range(args.data_parallel_size)]
-                all_denominator_on_dps = [torch.zeros(1).cuda() for _ in range(args.data_parallel_size)]
-                torch.distributed.all_gather(all_numerator_on_dps, numerator, group=mpu.get_data_parallel_group())
-                torch.distributed.all_gather(all_denominator_on_dps, denominator, group=mpu.get_data_parallel_group())
+                device = 'cpu' if 'cpu:gloo' == torch.distributed.get_backend(group=mpu.get_data_parallel_group()) else 'cuda'
+                all_numerator_on_dps = [torch.zeros(1, device=device) for _ in range(args.data_parallel_size)]
+                all_denominator_on_dps = [torch.zeros(1, device=device) for _ in range(args.data_parallel_size)]
+                numerator_tensor = torch.tensor([numerator], device=device)
+                denominator_tensor = torch.tensor([denominator], device=device)
+                torch.distributed.all_gather(all_numerator_on_dps, numerator_tensor, group=mpu.get_data_parallel_group())
+                torch.distributed.all_gather(all_denominator_on_dps, denominator_tensor, group=mpu.get_data_parallel_group())
                 numerator = sum(all_numerator_on_dps)
                 denominator = sum(all_denominator_on_dps)
             loss_reduced[key] = numerator / denominator
@@ -703,7 +706,7 @@ def training_log(loss_dict, total_loss_dict, learning_rate, decoupled_learning_r
     for key in loss_dict:
         if not skipped_iter:
             total_loss_dict[key] = total_loss_dict.get(
-                key, torch.tensor([0.0], dtype=torch.float, device='cuda')) + loss_dict[key]
+                key, torch.tensor([0.0], dtype=torch.float, device='cpu')) + loss_dict[key]
         else:
             value = loss_dict[key].float().sum().item()
             is_nan = value == float('inf') or \
@@ -884,7 +887,7 @@ def training_log(loss_dict, total_loss_dict, learning_rate, decoupled_learning_r
                       float(max(1, total_loss_dict[advanced_iters_key]))
                 if avg > 0.0:
                     log_string += ' {}: {:.6E} |'.format(key, avg)
-                total_loss_dict[key] = torch.tensor([0.0], dtype=torch.float, device='cuda')
+                total_loss_dict[key] = torch.tensor([0.0], dtype=torch.float, device='cpu')
         log_string += ' loss scale: {:.1f} |'.format(loss_scale)
         if grad_norm is not None:
             log_string += ' grad norm: {:.3f} |'.format(grad_norm)
@@ -1230,8 +1233,12 @@ def train(forward_step_func, model, optimizer, opt_param_scheduler,
             done_cuda = torch.tensor(
                 [train_time > args.exit_duration_in_mins],
                 dtype=torch.int, device='cuda')
+            if "cpu:gloo" == torch.distributed.get_backend():
+                done_cuda = done_cuda.cpu()
             torch.distributed.all_reduce(
                 done_cuda, op=torch.distributed.ReduceOp.MAX)
+            if "cpu:gloo" == torch.distributed.get_backend():
+                done_cuda = done_cuda.cuda(torch.cuda.current_device())
             done = done_cuda.item()
             if done:
                 if not saved_checkpoint:

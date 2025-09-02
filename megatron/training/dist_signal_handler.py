@@ -38,6 +38,8 @@ def all_gather_item(item, dtype, group=None, async_op=False, local_rank=None):
         group_size = get_world_size()
 
     tensor = torch.tensor([item], device=device, dtype=dtype)
+    if "cpu:gloo" == torch.distributed.get_backend(group=group):
+        tensor = tensor.cpu()
     output_tensors = [
         torch.zeros(1, dtype=tensor.dtype, device=tensor.device)
         for _ in range(group_size)

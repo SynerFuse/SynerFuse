@@ -87,6 +87,8 @@ def calc_params_l2_norm(model):
         False # no per-parameter norm
     )
     norm_2 = norm * norm
+    if "cpu:gloo" == torch.distributed.get_backend(group=mpu.get_model_parallel_group()):
+        norm_2 = norm_2.cpu()
     if mpu.get_expert_model_parallel_world_size() == 1:
         # Sum across all model-parallel GPUs(tensor + pipeline).
         torch.distributed.all_reduce(norm_2,
@@ -100,6 +102,8 @@ def calc_params_l2_norm(model):
         torch.distributed.all_reduce(norm_2,
                                      op=torch.distributed.ReduceOp.SUM,
                                      group=mpu.get_pipeline_model_parallel_group())
+    if "cpu:gloo" == torch.distributed.get_backend(group=mpu.get_model_parallel_group()):
+        norm_2 = norm_2.cuda(torch.cuda.current_device())
     return norm_2.item() ** 0.5
 
 
@@ -107,8 +111,12 @@ def average_losses_across_data_parallel_group(losses):
     """Reduce a tensor of losses across all GPUs."""
     averaged_losses = torch.cat(
         [loss.clone().detach().view(1) for loss in losses])
+    if "cpu:gloo" == torch.distributed.get_backend(group=mpu.get_data_parallel_group()):
+        averaged_losses = averaged_losses.cpu()
     torch.distributed.all_reduce(averaged_losses,
                                  group=mpu.get_data_parallel_group())
+    if "cpu:gloo" == torch.distributed.get_backend(group=mpu.get_data_parallel_group()):
+        averaged_losses = averaged_losses.cuda(torch.cuda.current_device())
     averaged_losses = averaged_losses / \
         torch.distributed.get_world_size(group=mpu.get_data_parallel_group())
 

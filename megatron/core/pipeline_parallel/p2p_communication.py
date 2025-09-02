@@ -191,7 +191,10 @@ def _p2p_ops(
         # to allow the overlap of the independent communications.
         # Using the global process group is compatible because the pipeline-parallel
         # communications set the source and destination by global rank.
-        even_recv_odd_send_group = torch.distributed.group.WORLD
+        if "cpu:gloo" == torch.distributed.get_backend(torch.distributed.group.WORLD):
+            even_recv_odd_send_group = group
+        else:
+            even_recv_odd_send_group = torch.distributed.group.WORLD
     else:
         even_recv_odd_send_group = group
     if get_pipeline_model_parallel_rank() % 2 == 0:
