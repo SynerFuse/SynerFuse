@@ -1397,6 +1397,9 @@ class DistributedOptimizer(MixedPrecisionOptimizer):
                 all_gather_handle_index
             ]
             assert all_gather_handle_index < len(self.all_gather_handles)
+            if "cpu:gloo" == torch.distributed.get_backend(data_parallel_group):
+                pbuf = pbuf.cpu()
+                pbuf_views[data_parallel_rank] = pbuf_views[data_parallel_rank].cpu()
             all_gather_handle = torch.distributed._all_gather_base(
                 pbuf,
                 pbuf_views[data_parallel_rank],
