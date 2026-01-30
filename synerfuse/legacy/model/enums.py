@@ -18,4 +18,4 @@ class AttnMaskType(enum.Enum):
     causal = 2
 
 # For backward compatibility with old model checkpoints
-from megatron.core.enums import ModelType
+from synerfuse.core.enums import ModelType

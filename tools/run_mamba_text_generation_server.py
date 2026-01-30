@@ -5,18 +5,18 @@ import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir)))
-from megatron.training import get_args
-from megatron.training import print_rank_0
-from megatron.core import mpu
-from megatron.training.checkpointing import load_checkpoint
-from megatron.training.initialize import initialize_megatron
-from megatron.core.models.mamba.mamba_model import MambaModel
-from megatron.core.transformer.spec_utils import import_module
-from megatron.training import get_model
-from megatron.training.arguments import core_transformer_config_from_args
-from megatron.inference.text_generation_server import MegatronServer
-from megatron.inference.text_generation import generate_and_post_process
-from megatron.inference.text_generation import beam_search_and_post_process
+from synerfuse.training import get_args
+from synerfuse.training import print_rank_0
+from synerfuse.core import mpu
+from synerfuse.training.checkpointing import load_checkpoint
+from synerfuse.training.initialize import initialize_megatron
+from synerfuse.core.models.mamba.mamba_model import MambaModel
+from synerfuse.core.transformer.spec_utils import import_module
+from synerfuse.training import get_model
+from synerfuse.training.arguments import core_transformer_config_from_args
+from synerfuse.inference.text_generation_server import MegatronServer
+from synerfuse.inference.text_generation import generate_and_post_process
+from synerfuse.inference.text_generation import beam_search_and_post_process
 
 import torch
 

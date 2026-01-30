@@ -2,11 +2,11 @@ from typing import Dict, List
 
 import torch
 
-from megatron.core.inference.common_inference_params import CommonInferenceParams
-from megatron.core.inference.engines.abstract_engine import AbstractEngine
-from megatron.core.inference.inference_request import InferenceRequest
-from megatron.core.inference.scheduler import Scheduler
-from megatron.core.inference.text_generation_controllers.simple_text_generation_controller import (
+from synerfuse.core.inference.common_inference_params import CommonInferenceParams
+from synerfuse.core.inference.engines.abstract_engine import AbstractEngine
+from synerfuse.core.inference.inference_request import InferenceRequest
+from synerfuse.core.inference.scheduler import Scheduler
+from synerfuse.core.inference.text_generation_controllers.simple_text_generation_controller import (
     SimpleTextGenerationController,
 )
 

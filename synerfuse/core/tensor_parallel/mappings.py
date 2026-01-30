@@ -2,7 +2,7 @@
 
 import torch
 
-from megatron.core.parallel_state import (
+from synerfuse.core.parallel_state import (
     get_expert_model_parallel_group,
     get_global_memory_buffer,
     get_tensor_and_expert_parallel_group,

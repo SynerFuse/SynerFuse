@@ -5,18 +5,18 @@ import pytest
 import torch
 from torch.optim import Adam
 
-from megatron.core import parallel_state
-from megatron.core.dist_checkpointing.dict_utils import diff, nested_values
-from megatron.core.dist_checkpointing.optimizer import \
+from synerfuse.core import parallel_state
+from synerfuse.core.dist_checkpointing.dict_utils import diff, nested_values
+from synerfuse.core.dist_checkpointing.optimizer import \
     get_param_id_to_sharded_param_map, optim_state_to_sharding_state
-from megatron.core.transformer.mlp import MLP
+from synerfuse.core.transformer.mlp import MLP
 from tests.unit_tests.dist_checkpointing import TempNamedDir
 from tests.unit_tests.test_utilities import Utils
-from megatron.core.dist_checkpointing import save, load, load_plain_tensors, \
+from synerfuse.core.dist_checkpointing import save, load, load_plain_tensors, \
     ShardedTensor
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
 
 
 def initialize_mlp(glu=True):

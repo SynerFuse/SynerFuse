@@ -6,9 +6,9 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import torch
 
-from megatron import core
-from megatron.core import ModelParallelConfig
-from megatron.core.parallel_state import (
+from synerfuse import core
+from synerfuse.core import ModelParallelConfig
+from synerfuse.core.parallel_state import (
     get_pipeline_model_parallel_group,
     get_pipeline_model_parallel_next_rank,
     get_pipeline_model_parallel_prev_rank,

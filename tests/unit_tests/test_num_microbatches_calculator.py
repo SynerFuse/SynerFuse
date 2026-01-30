@@ -2,7 +2,7 @@ from typing import List, Optional
 
 import pytest
 
-import megatron.core.num_microbatches_calculator as mb_calculator
+import synerfuse.core.num_microbatches_calculator as mb_calculator
 
 
 def reconfigure_num_microbatches_calculator(

@@ -3,7 +3,7 @@
 import torch
 import torch.nn.functional as F
 
-from megatron.core.jit import jit_fuser
+from synerfuse.core.jit import jit_fuser
 
 ###### BIAS SWIGLU FUSION/ NO AUTOGRAD ################
 

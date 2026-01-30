@@ -4,12 +4,12 @@ from typing import Optional, Tuple
 import torch
 from torch import Tensor
 
-from megatron.core import parallel_state, tensor_parallel
-from megatron.core.dist_checkpointing.mapping import ShardedStateDict
-from megatron.core.fusions.fused_cross_entropy import fused_vocab_parallel_cross_entropy
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.utils import make_tp_sharded_tensor_for_checkpoint
+from synerfuse.core import parallel_state, tensor_parallel
+from synerfuse.core.dist_checkpointing.mapping import ShardedStateDict
+from synerfuse.core.fusions.fused_cross_entropy import fused_vocab_parallel_cross_entropy
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.utils import make_tp_sharded_tensor_for_checkpoint
 
 
 class LanguageModule(MegatronModule):

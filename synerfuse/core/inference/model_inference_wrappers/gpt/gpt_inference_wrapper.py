@@ -3,10 +3,10 @@ from typing import List, Tuple
 
 import torch
 
-from megatron.core.inference.model_inference_wrappers.abstract_model_inference_wrapper import (
+from synerfuse.core.inference.model_inference_wrappers.abstract_model_inference_wrapper import (
     AbstractModelInferenceWrapper,
 )
-from megatron.core.models.gpt import GPTModel
+from synerfuse.core.models.gpt import GPTModel
 
 
 class GPTInferenceWrapper(AbstractModelInferenceWrapper):

@@ -2,7 +2,7 @@
 
 import torch
 
-from megatron.core.jit import jit_fuser
+from synerfuse.core.jit import jit_fuser
 
 ###### BIAS GELU FUSION/ NO AUTOGRAD ################
 # 1/sqrt(2*pi)-> 0.3989423

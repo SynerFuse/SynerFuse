@@ -7,30 +7,30 @@ from typing import Union
 
 import torch
 
-from megatron.training import (
+from synerfuse.training import (
     get_args,
     get_timers,
     get_tokenizer,
     print_rank_0
 )
-from megatron.core import mpu, tensor_parallel
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.t5_dataset import (
+from synerfuse.core import mpu, tensor_parallel
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.t5_dataset import (
     T5MaskedWordPieceDataset,
     T5MaskedWordPieceDatasetConfig,
 )
-from megatron.core.enums import ModelType
-from megatron.core.models.T5 import T5Model
-from megatron.training import pretrain
-from megatron.training.arguments import core_transformer_config_from_args
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.t5_dataset import T5MaskedWordPieceDataset, T5MaskedWordPieceDatasetConfig
-from megatron.core.datasets.utils import get_blend_from_list
-from megatron.core.models.T5.t5_spec import (get_t5_encoder_with_transformer_engine_block_spec,
+from synerfuse.core.enums import ModelType
+from synerfuse.core.models.T5 import T5Model
+from synerfuse.training import pretrain
+from synerfuse.training.arguments import core_transformer_config_from_args
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.t5_dataset import T5MaskedWordPieceDataset, T5MaskedWordPieceDatasetConfig
+from synerfuse.core.datasets.utils import get_blend_from_list
+from synerfuse.core.models.T5.t5_spec import (get_t5_encoder_with_transformer_engine_block_spec,
                                             get_t5_decoder_with_transformer_engine_block_spec,
                                             get_t5_encoder_with_local_block_spec,
                                             get_t5_decoder_with_local_block_spec)
-from megatron.legacy.model import T5Model as LegacyT5Model
+from synerfuse.legacy.model import T5Model as LegacyT5Model
 
 """
 Pipeline parallelism for T5

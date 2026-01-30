@@ -3,15 +3,15 @@ import time
 import torch
 import torch.distributed as dist
 
-from megatron.training import get_args, print_rank_0
-from megatron.core import mpu
-from megatron.training.checkpointing import load_biencoder_checkpoint
-from megatron.legacy.data.orqa_wiki_dataset import get_open_retrieval_wiki_dataset
-from megatron.legacy.data.orqa_wiki_dataset import get_open_retrieval_batch
-from megatron.legacy.data.biencoder_dataset_utils import get_one_epoch_dataloader
-from megatron.legacy.data.realm_index import detach, OpenRetreivalDataStore
-from megatron.legacy.model.biencoder_model import get_model_provider
-from megatron.training import get_model
+from synerfuse.training import get_args, print_rank_0
+from synerfuse.core import mpu
+from synerfuse.training.checkpointing import load_biencoder_checkpoint
+from synerfuse.legacy.data.orqa_wiki_dataset import get_open_retrieval_wiki_dataset
+from synerfuse.legacy.data.orqa_wiki_dataset import get_open_retrieval_batch
+from synerfuse.legacy.data.biencoder_dataset_utils import get_one_epoch_dataloader
+from synerfuse.legacy.data.realm_index import detach, OpenRetreivalDataStore
+from synerfuse.legacy.model.biencoder_model import get_model_provider
+from synerfuse.training import get_model
 
 
 class IndexBuilder(object):

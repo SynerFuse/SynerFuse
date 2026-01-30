@@ -3,14 +3,14 @@ import math
 
 import torch
 
-from megatron.core.dist_checkpointing import save, load, load_plain_tensors
-from megatron.core import parallel_state
-from megatron.core.dist_checkpointing.dict_utils import diff
-from megatron.core.dist_checkpointing.serialization import \
+from synerfuse.core.dist_checkpointing import save, load, load_plain_tensors
+from synerfuse.core import parallel_state
+from synerfuse.core.dist_checkpointing.dict_utils import diff
+from synerfuse.core.dist_checkpointing.serialization import \
     get_default_save_sharded_strategy, get_default_load_sharded_strategy
-from megatron.core.dist_checkpointing.strategies.fully_parallel import \
+from synerfuse.core.dist_checkpointing.strategies.fully_parallel import \
     FullyParallelSaveStrategyWrapper, FullyParallelLoadStrategyWrapper
-from megatron.core.dist_checkpointing.validation import StrictHandling
+from synerfuse.core.dist_checkpointing.validation import StrictHandling
 from tests.unit_tests.dist_checkpointing import TempNamedDir
 from tests.unit_tests.test_utilities import Utils
 

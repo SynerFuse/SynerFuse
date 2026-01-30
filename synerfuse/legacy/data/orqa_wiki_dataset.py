@@ -9,9 +9,9 @@ import random
 import torch
 from torch.utils.data import Dataset
 
-from megatron.training import print_rank_0, get_args, get_tokenizer
-from megatron.core import tensor_parallel
-from megatron.legacy.data.biencoder_dataset_utils import make_attention_mask
+from synerfuse.training import print_rank_0, get_args, get_tokenizer
+from synerfuse.core import tensor_parallel
+from synerfuse.legacy.data.biencoder_dataset_utils import make_attention_mask
 
 def get_open_retrieval_wiki_dataset():
     args = get_args()

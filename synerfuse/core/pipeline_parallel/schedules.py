@@ -6,11 +6,11 @@ from typing import Callable, Iterator, List, Optional, Union
 import torch
 from torch.autograd.variable import Variable
 
-from megatron.core import parallel_state
-from megatron.core.enums import ModelType
-from megatron.core.pipeline_parallel import p2p_communication
-from megatron.core.transformer.moe.router import MoEAuxLossAutoScaler
-from megatron.core.utils import (
+from synerfuse.core import parallel_state
+from synerfuse.core.enums import ModelType
+from synerfuse.core.pipeline_parallel import p2p_communication
+from synerfuse.core.transformer.moe.router import MoEAuxLossAutoScaler
+from synerfuse.core.utils import (
     drain_embedding_wgrad_compute,
     get_attr_wrapped_model,
     get_model_config,

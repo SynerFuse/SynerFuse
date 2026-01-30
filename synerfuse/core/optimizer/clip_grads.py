@@ -35,7 +35,7 @@ except ImportError:
             'multi_tensor_l2norm, and multi_tensor_scale'
         )
 
-        from megatron.core.utils import (
+        from synerfuse.core.utils import (
             local_multi_tensor_applier,
             local_multi_tensor_l2_norm,
             local_multi_tensor_scale,

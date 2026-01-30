@@ -9,13 +9,13 @@ from typing import Dict, Optional, Tuple
 import numpy
 import torch
 
-from megatron.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
-from megatron.core.datasets.indexed_dataset import IndexedDataset
-from megatron.core.datasets.megatron_dataset import MegatronDataset
-from megatron.core.datasets.megatron_tokenizer import MegatronTokenizer
-from megatron.core.datasets.utils import Split
-from megatron.core.datasets.utils_s3 import S3Config, is_s3_path
-from megatron.core.utils import log_single_rank
+from synerfuse.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
+from synerfuse.core.datasets.indexed_dataset import IndexedDataset
+from synerfuse.core.datasets.megatron_dataset import MegatronDataset
+from synerfuse.core.datasets.megatron_tokenizer import MegatronTokenizer
+from synerfuse.core.datasets.utils import Split
+from synerfuse.core.datasets.utils_s3 import S3Config, is_s3_path
+from synerfuse.core.utils import log_single_rank
 
 logger = logging.getLogger(__name__)
 
@@ -419,7 +419,7 @@ class GPTDataset(MegatronDataset):
                 drop_last_partial_sequence = self.config.drop_last_partial_validation_sequence
 
             # Build the sample index
-            from megatron.core.datasets import helpers
+            from synerfuse.core.datasets import helpers
 
             if self.index_split == Split.valid:
                 drop_last_partial_sequence = self.config.drop_last_partial_validation_sequence

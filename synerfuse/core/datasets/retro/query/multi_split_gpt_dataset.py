@@ -9,14 +9,14 @@ from typing import Dict, List
 
 import numpy
 
-from megatron.core.datasets.blended_megatron_dataset_config import (
+from synerfuse.core.datasets.blended_megatron_dataset_config import (
     convert_split_vector_to_split_matrix,
     parse_and_normalize_split,
 )
-from megatron.core.datasets.gpt_dataset import GPTDataset, GPTDatasetConfig
-from megatron.core.datasets.indexed_dataset import IndexedDataset
-from megatron.core.datasets.utils import Split
-from megatron.core.utils import log_single_rank
+from synerfuse.core.datasets.gpt_dataset import GPTDataset, GPTDatasetConfig
+from synerfuse.core.datasets.indexed_dataset import IndexedDataset
+from synerfuse.core.datasets.utils import Split
+from synerfuse.core.utils import log_single_rank
 
 logger = logging.getLogger(__name__)
 

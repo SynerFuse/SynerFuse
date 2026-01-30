@@ -301,13 +301,13 @@ def save_checkpoint(queue, args):
         sys.path.insert(0, args.megatron_path)
 
     try:
-        from megatron.training.arguments import (parse_args, validate_args)
-        from megatron.training.checkpointing import save_checkpoint
-        from megatron.training.global_vars import set_global_variables, get_args
-        from megatron.core.enums import ModelType
-        from megatron.training.tokenizer.tokenizer import _vocab_size_with_padding
-        from megatron.legacy import fused_kernels
-        from megatron.core import mpu
+        from synerfuse.training.arguments import (parse_args, validate_args)
+        from synerfuse.training.checkpointing import save_checkpoint
+        from synerfuse.training.global_vars import set_global_variables, get_args
+        from synerfuse.core.enums import ModelType
+        from synerfuse.training.tokenizer.tokenizer import _vocab_size_with_padding
+        from synerfuse.legacy import fused_kernels
+        from synerfuse.core import mpu
     except ModuleNotFoundError:
         print("Unable to import Megatron, please specify the path to Megatron using --megatron-path. Exiting.")
         exit(1)

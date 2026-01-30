@@ -1,8 +1,8 @@
-from megatron.core import tensor_parallel
-from megatron.core.transformer.mlp import MLP, MLPSubmodules
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.spec_utils import ModuleSpec, build_module
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core import tensor_parallel
+from synerfuse.core.transformer.mlp import MLP, MLPSubmodules
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.spec_utils import ModuleSpec, build_module
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 
 
 class MultimodalProjector(MegatronModule):

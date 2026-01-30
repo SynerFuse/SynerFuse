@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from megatron.core.datasets.indexed_dataset import IndexedDataset
+from synerfuse.core.datasets.indexed_dataset import IndexedDataset
 
 
 class DBDataset(torch.utils.data.Dataset):

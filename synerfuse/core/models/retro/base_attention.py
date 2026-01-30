@@ -2,10 +2,10 @@
 
 """Base class for decoder and encoder attention modules."""
 
-from megatron.core.models.retro.config import RetroConfig
-from megatron.core.transformer.attention import CrossAttention, CrossAttentionSubmodules
-from megatron.core.transformer.enums import AttnMaskType
-from megatron.core.transformer.module import MegatronModule
+from synerfuse.core.models.retro.config import RetroConfig
+from synerfuse.core.transformer.attention import CrossAttention, CrossAttentionSubmodules
+from synerfuse.core.transformer.enums import AttnMaskType
+from synerfuse.core.transformer.module import MegatronModule
 
 
 class BaseRetroCrossAttention(MegatronModule):

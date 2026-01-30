@@ -20,24 +20,24 @@ import time
 _TRAIN_START_TIME = time.time()
 import torch
 
-from megatron.core import mpu, tensor_parallel
-from megatron.core.utils import check_param_hashes_across_dp_replicas, get_model_config, StragglerDetector
-from megatron.training.checkpointing import load_checkpoint
-from megatron.training.checkpointing import save_checkpoint
-from megatron.legacy.model import Float16Module
-from megatron.core.distributed import DistributedDataParallelConfig
-from megatron.core.distributed import DistributedDataParallel as DDP
-from megatron.core.distributed import finalize_model_grads
-from megatron.core.enums import ModelType
-from megatron.core.optimizer import get_megatron_optimizer, OptimizerConfig
-from megatron.training.initialize import initialize_megatron
-from megatron.training.initialize import write_args_to_tensorboard
-from megatron.training.initialize import set_jit_fusion_options
-from megatron.training.optimizer_param_scheduler import OptimizerParamScheduler
-from megatron.legacy.data.data_samplers import build_pretraining_data_loader
-from megatron.core.transformer.moe.moe_utils import track_moe_metrics
-from megatron.core.pipeline_parallel import get_forward_backward_func
-from megatron.core.num_microbatches_calculator import (
+from synerfuse.core import mpu, tensor_parallel
+from synerfuse.core.utils import check_param_hashes_across_dp_replicas, get_model_config, StragglerDetector
+from synerfuse.training.checkpointing import load_checkpoint
+from synerfuse.training.checkpointing import save_checkpoint
+from synerfuse.legacy.model import Float16Module
+from synerfuse.core.distributed import DistributedDataParallelConfig
+from synerfuse.core.distributed import DistributedDataParallel as DDP
+from synerfuse.core.distributed import finalize_model_grads
+from synerfuse.core.enums import ModelType
+from synerfuse.core.optimizer import get_megatron_optimizer, OptimizerConfig
+from synerfuse.training.initialize import initialize_megatron
+from synerfuse.training.initialize import write_args_to_tensorboard
+from synerfuse.training.initialize import set_jit_fusion_options
+from synerfuse.training.optimizer_param_scheduler import OptimizerParamScheduler
+from synerfuse.legacy.data.data_samplers import build_pretraining_data_loader
+from synerfuse.core.transformer.moe.moe_utils import track_moe_metrics
+from synerfuse.core.pipeline_parallel import get_forward_backward_func
+from synerfuse.core.num_microbatches_calculator import (
     get_current_global_batch_size,
     get_num_microbatches,
     update_num_microbatches)
@@ -705,8 +705,9 @@ def training_log(loss_dict, total_loss_dict, learning_rate, decoupled_learning_r
     got_nan = False
     for key in loss_dict:
         if not skipped_iter:
-            total_loss_dict[key] = total_loss_dict.get(
-                key, torch.tensor([0.0], dtype=torch.float, device='cpu')) + loss_dict[key]
+            loss_val = loss_dict[key].to('cpu')
+            zero = torch.tensor([0.0], dtype=loss_val.dtype, device='cpu')
+            total_loss_dict[key] = total_loss_dict.get(key, zero) + loss_val
         else:
             value = loss_dict[key].float().sum().item()
             is_nan = value == float('inf') or \
@@ -1307,7 +1308,7 @@ def evaluate(forward_step_func,
     timers('evaluate', log_level=0).start(barrier=True)
 
     if args.vision_pretraining and args.vision_pretraining_type == "dino":
-        from megatron.legacy.model.vision.knn_monitor import compute_feature_bank
+        from synerfuse.legacy.model.vision.knn_monitor import compute_feature_bank
         compute_feature_bank(model)
 
     # Turn on evaluation mode which disables dropout.

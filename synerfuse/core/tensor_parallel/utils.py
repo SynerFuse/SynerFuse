@@ -4,13 +4,13 @@ from typing import List, Sequence
 
 import torch
 
-from megatron.core import parallel_state
-from megatron.core.parallel_state import (
+from synerfuse.core import parallel_state
+from synerfuse.core.parallel_state import (
     get_tensor_model_parallel_group,
     get_tensor_model_parallel_rank,
     get_tensor_model_parallel_world_size,
 )
-from megatron.core.utils import divide
+from synerfuse.core.utils import divide
 
 
 def split_tensor_along_last_dim(

@@ -4,25 +4,25 @@ import pytest
 
 import torch
 
-from megatron.core.dist_checkpointing import save, load, load_plain_tensors
-from megatron.core import parallel_state as ps
-from megatron.core.dist_checkpointing.validation import StrictHandling
-from megatron.core.models.T5 import T5Model
-from megatron.core.models.T5.t5_spec import \
+from synerfuse.core.dist_checkpointing import save, load, load_plain_tensors
+from synerfuse.core import parallel_state as ps
+from synerfuse.core.dist_checkpointing.validation import StrictHandling
+from synerfuse.core.models.T5 import T5Model
+from synerfuse.core.models.T5.t5_spec import \
     encoder_model_with_transformer_engine_default_spec as t5_encoder_te_spec, \
     decoder_model_with_transformer_engine_default_spec as t5_decoder_te_spec, \
     encoder_model_with_local_spec as t5_encoder_local_spec, \
     decoder_model_with_local_spec as t5_decoder_local_spec
-from megatron.core.models.retro.decoder_spec import \
+from synerfuse.core.models.retro.decoder_spec import \
     get_retro_decoder_layer_te_spec, get_retro_decoder_layer_local_spec
-from megatron.core.models.retro.encoder_spec import \
+from synerfuse.core.models.retro.encoder_spec import \
     get_retro_encoder_layer_te_spec, get_retro_encoder_layer_local_spec
-from megatron.core.transformer.transformer_block import \
+from synerfuse.core.transformer.transformer_block import \
     TransformerBlockSubmodules
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 from tests.unit_tests.dist_checkpointing import TempNamedDir
 from tests.unit_tests.test_utilities import Utils
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
 
 
 def initialize_t5_model(seed, encoder_spec_fn, decoder_spec_fn, num_layers=2, **config_kwargs):

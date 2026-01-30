@@ -6,8 +6,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from functools import partial
 from torch.nn.init import trunc_normal_
-from megatron.legacy.model.transformer import DropPath
-from megatron.legacy.model import LayerNorm
+from synerfuse.legacy.model.transformer import DropPath
+from synerfuse.legacy.model import LayerNorm
 
 
 class Mlp(nn.Module):

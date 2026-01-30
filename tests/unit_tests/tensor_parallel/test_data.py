@@ -1,4 +1,4 @@
-from megatron.core.tensor_parallel.data import broadcast_data
+from synerfuse.core.tensor_parallel.data import broadcast_data
 import torch
 from tests.unit_tests.test_utilities import Utils
 

@@ -5,8 +5,8 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
-from megatron.core.transformer.enums import AttnMaskType
-from megatron.core.transformer.utils import get_default_causal_mask
+from synerfuse.core.transformer.enums import AttnMaskType
+from synerfuse.core.transformer.utils import get_default_causal_mask
 
 
 class ScaledUpperTriangMaskedSoftmax(torch.autograd.Function):

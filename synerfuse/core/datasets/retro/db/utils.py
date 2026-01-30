@@ -9,10 +9,10 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
-from megatron.core.datasets.indexed_dataset import IndexedDataset
-from megatron.core.datasets.retro.config import RetroPreprocessingConfig
-from megatron.core.datasets.retro.external_libs import h5py
-from megatron.core.models.retro.utils import get_gpt_data_dir
+from synerfuse.core.datasets.indexed_dataset import IndexedDataset
+from synerfuse.core.datasets.retro.config import RetroPreprocessingConfig
+from synerfuse.core.datasets.retro.external_libs import h5py
+from synerfuse.core.models.retro.utils import get_gpt_data_dir
 
 from .dataset import DBDataset
 

@@ -26,12 +26,12 @@ import collections
 import numpy as np
 import torch
 
-from megatron.training import (
+from synerfuse.training import (
     get_args,
     print_rank_0
 )
-from megatron.core import mpu
-from megatron.core.datasets.indexed_dataset import IndexedDataset
+from synerfuse.core import mpu
+from synerfuse.core.datasets.indexed_dataset import IndexedDataset
 
 
 DSET_TYPE_BERT = 'standard_bert'
@@ -535,8 +535,8 @@ def build_dataset(name, data_prefix, max_num_samples,
                   max_seq_length_dec, dataset_type='standard_bert',
                   indexed_dataset=None):
 
-    from megatron.legacy.data.ict_dataset import ICTDataset
-    from megatron.legacy.data.multimodal_dataset import MultiModalDataset
+    from synerfuse.legacy.data.ict_dataset import ICTDataset
+    from synerfuse.legacy.data.multimodal_dataset import MultiModalDataset
 
     if dataset_type == DSET_TYPE_BERT or dataset_type == DSET_TYPE_T5:
         raise ValueError("The Megatron-LM BERT and T5 datasets are deprecated.")
@@ -684,7 +684,7 @@ def get_samples_mapping(indexed_dataset,
         print_rank_0(' > building samples index mapping for {} ...'.format(
             name))
         # First compile and then import.
-        from megatron.core.datasets import helpers
+        from synerfuse.core.datasets import helpers
         samples_mapping = helpers.build_mapping(
             indexed_dataset.document_indices,
             indexed_dataset.sequence_lengths,

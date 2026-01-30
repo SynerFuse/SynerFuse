@@ -14,11 +14,11 @@ from PIL import Image, ImageDraw
 from torchvision import transforms as T
 from torchvision.transforms import Compose, RandAugment, RandomResizedCrop, Resize, ToPILImage
 
-from megatron.core import mpu
-from megatron.energon import Batch, CaptioningSample, DefaultTaskEncoder, OCRSample, VQASample
-from megatron.energon.transforms import CustomTransform, MergeTransform
-from megatron.training import get_args
-from megatron.training.tokenizer import build_tokenizer
+from synerfuse.core import mpu
+from synerfuse.energon import Batch, CaptioningSample, DefaultTaskEncoder, OCRSample, VQASample
+from synerfuse.energon.transforms import CustomTransform, MergeTransform
+from synerfuse.training import get_args
+from synerfuse.training.tokenizer import build_tokenizer
 
 try:
     from torchvision.transforms import InterpolationMode

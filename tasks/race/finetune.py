@@ -2,14 +2,14 @@
 
 """Race."""
 
-from megatron.training import get_args
-from megatron.training import print_rank_0
-from megatron.training import get_tokenizer
-from megatron.legacy.model.multiple_choice import MultipleChoice
+from synerfuse.training import get_args
+from synerfuse.training import print_rank_0
+from synerfuse.training import get_tokenizer
+from synerfuse.legacy.model.multiple_choice import MultipleChoice
 from tasks.eval_utils import accuracy_func_provider
 from tasks.finetune_utils import finetune
 from tasks.race.data import RaceDataset
-from megatron.training.arguments import core_transformer_config_from_args
+from synerfuse.training.arguments import core_transformer_config_from_args
 
 
 def train_valid_datasets_provider():

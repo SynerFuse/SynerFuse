@@ -19,17 +19,17 @@ import psutil
 import torch
 from tqdm import tqdm
 
-from megatron.core.datasets.retro.config import RetroPreprocessingConfig
-from megatron.core.datasets.retro.db.dataset import DBDataset
-from megatron.core.datasets.retro.db.utils import (
+from synerfuse.core.datasets.retro.config import RetroPreprocessingConfig
+from synerfuse.core.datasets.retro.db.dataset import DBDataset
+from synerfuse.core.datasets.retro.db.utils import (
     get_merged_train_dataset as get_db_merged_train_dataset,
 )
-from megatron.core.datasets.retro.external_libs import faiss, h5py
-from megatron.core.datasets.retro.index.factory import IndexFactory
-from megatron.core.datasets.retro.index.index import Index
-from megatron.core.datasets.retro.index.utils import get_index_dir
-from megatron.core.datasets.retro.query.gpt_chunk_dataset import GPTChunkDataset
-from megatron.core.datasets.retro.utils import (
+from synerfuse.core.datasets.retro.external_libs import faiss, h5py
+from synerfuse.core.datasets.retro.index.factory import IndexFactory
+from synerfuse.core.datasets.retro.index.index import Index
+from synerfuse.core.datasets.retro.index.utils import get_index_dir
+from synerfuse.core.datasets.retro.query.gpt_chunk_dataset import GPTChunkDataset
+from synerfuse.core.datasets.retro.utils import (
     GPTToTextDataset,
     get_blocks_by_rank,
     log_retro_rank_0,

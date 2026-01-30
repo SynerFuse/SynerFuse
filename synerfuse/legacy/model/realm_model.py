@@ -1,17 +1,17 @@
 import os
 import torch
 
-from megatron.training import get_args, print_rank_0
-from megatron.training.checkpointing import get_checkpoint_tracker_filename, get_checkpoint_name
-from megatron.legacy.model import BertModel
+from synerfuse.training import get_args, print_rank_0
+from synerfuse.training.checkpointing import get_checkpoint_tracker_filename, get_checkpoint_name
+from synerfuse.legacy.model import BertModel
 from .module import MegatronModule
-from megatron.core import mpu
-from megatron.legacy.model.enums import AttnMaskType
-from megatron.legacy.model.utils import get_linear_layer
-from megatron.legacy.model.utils import init_method_normal
-from megatron.legacy.model.language_model import get_language_model
-from megatron.legacy.model.utils import scaled_init_method_normal
-from megatron.legacy.model.bert_model import bert_extended_attention_mask, bert_position_ids
+from synerfuse.core import mpu
+from synerfuse.legacy.model.enums import AttnMaskType
+from synerfuse.legacy.model.utils import get_linear_layer
+from synerfuse.legacy.model.utils import init_method_normal
+from synerfuse.legacy.model.language_model import get_language_model
+from synerfuse.legacy.model.utils import scaled_init_method_normal
+from synerfuse.legacy.model.bert_model import bert_extended_attention_mask, bert_position_ids
 
 
 def general_ict_model_provider(only_query_model=False, only_block_model=False):

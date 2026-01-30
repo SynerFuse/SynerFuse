@@ -6,16 +6,16 @@ import os
 from typing import Any, Iterable, Dict, Optional
 
 from numpy import ndarray
-from megatron.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
-from megatron.core.datasets.utils import Split
+from synerfuse.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
+from synerfuse.core.datasets.utils import Split
 import torch
 import numpy
 import glob
 from collections import OrderedDict
 
-from megatron.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
-from megatron.core.datasets.megatron_dataset import LowLevelDataset, MegatronDataset
-from megatron.core.datasets.utils import Split
+from synerfuse.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
+from synerfuse.core.datasets.megatron_dataset import LowLevelDataset, MegatronDataset
+from synerfuse.core.datasets.utils import Split
 from dataclasses import dataclass
 
 

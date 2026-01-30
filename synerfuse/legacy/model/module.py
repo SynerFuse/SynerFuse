@@ -6,8 +6,8 @@ import torch
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 
-from megatron.training import get_args
-from megatron.core import mpu, tensor_parallel
+from synerfuse.training import get_args
+from synerfuse.core import mpu, tensor_parallel
 
 
 _FLOAT_TYPES = (torch.FloatTensor, torch.cuda.FloatTensor)

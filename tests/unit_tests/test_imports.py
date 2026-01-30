@@ -20,7 +20,7 @@ import traceback
 import torch
 import wrapt
 
-from megatron.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.module import MegatronModule
 
 
 def import_class_by_path(path: str):
@@ -123,7 +123,7 @@ def _test_domain_module_imports(module, subdomains: list):
 
 
 def test_domain_mcore():
-    import megatron.core as mcore
+    import synerfuse.core as mcore
 
     all_passed = _test_domain_module_imports(
         mcore,  subdomains=['models'])

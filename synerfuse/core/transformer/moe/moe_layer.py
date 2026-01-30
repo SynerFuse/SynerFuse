@@ -4,16 +4,16 @@ from abc import ABC, abstractmethod
 
 import torch
 
-from megatron.core import parallel_state, tensor_parallel
-from megatron.core.transformer.mlp import MLPSubmodules
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.moe.experts import GroupedMLP, SequentialMLP, TEGroupedMLP
-from megatron.core.transformer.moe.router import TopKRouter
-from megatron.core.transformer.moe.token_dispatcher import (
+from synerfuse.core import parallel_state, tensor_parallel
+from synerfuse.core.transformer.mlp import MLPSubmodules
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.moe.experts import GroupedMLP, SequentialMLP, TEGroupedMLP
+from synerfuse.core.transformer.moe.router import TopKRouter
+from synerfuse.core.transformer.moe.token_dispatcher import (
     MoEAllGatherTokenDispatcher,
     MoEAlltoAllTokenDispatcher,
 )
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 
 
 class BaseMoELayer(MegatronModule, ABC):

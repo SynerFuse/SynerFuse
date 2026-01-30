@@ -1,5 +1,5 @@
 import torch
-from megatron.core.inference.model_inference_wrappers.inference_wrapper_config import InferenceWrapperConfig
+from synerfuse.core.inference.model_inference_wrappers.inference_wrapper_config import InferenceWrapperConfig
 
 class TestModelInferenceWrapperConfig:
 

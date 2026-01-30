@@ -4,11 +4,11 @@ from copy import deepcopy
 import pytest
 import torch
 
-from megatron.core import InferenceParams
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
-from megatron.core.models.multimodal.llava_model import LLaVAModel
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core import InferenceParams
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
+from synerfuse.core.models.multimodal.llava_model import LLaVAModel
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 from tests.unit_tests.test_utilities import Utils
 
 

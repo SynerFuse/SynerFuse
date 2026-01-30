@@ -11,12 +11,12 @@ from time import time
 
 import torch
 
-from megatron.core import mpu, tensor_parallel, dist_checkpointing
-from megatron.core.dist_checkpointing.mapping import ShardedObject
-from megatron.core.dist_checkpointing.serialization import get_default_load_sharded_strategy
-from megatron.core.dist_checkpointing.strategies.fully_parallel import \
+from synerfuse.core import mpu, tensor_parallel, dist_checkpointing
+from synerfuse.core.dist_checkpointing.mapping import ShardedObject
+from synerfuse.core.dist_checkpointing.serialization import get_default_load_sharded_strategy
+from synerfuse.core.dist_checkpointing.strategies.fully_parallel import \
     FullyParallelSaveStrategyWrapper, FullyParallelLoadStrategyWrapper
-from megatron.core.num_microbatches_calculator import update_num_microbatches
+from synerfuse.core.num_microbatches_calculator import update_num_microbatches
 from .async_utils import schedule_async_save
 from .global_vars import get_args, get_one_logger
 from .utils import unwrap_model, print_rank_0, append_to_progress_log, is_last_rank
@@ -605,7 +605,7 @@ def _load_base_checkpoint(load_dir, rank0=False, sharded_state_dict=None,
     try:
         state_dict = torch.load(checkpoint_name, map_location='cpu')
     except ModuleNotFoundError:
-        from megatron.legacy.fp16_deprecated import loss_scaler
+        from synerfuse.legacy.fp16_deprecated import loss_scaler
         # For backward compatibility.
         if not rank0:
             print_rank_0(' > deserializing using the old code structure ...')

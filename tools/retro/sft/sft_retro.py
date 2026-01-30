@@ -8,17 +8,17 @@ import sys, os
 
 sys.path.append(os.path.abspath(os.path.join(
     os.path.join(os.path.dirname(__file__), "../../../"))))
-from megatron.training import get_args, get_retro_args
-from megatron.training import print_rank_0
-from megatron.training import get_timers
-from megatron.training import get_tokenizer
-from megatron.core import tensor_parallel
-from megatron.core.enums import ModelType
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.utils import get_blend_from_list
-from megatron.training import pretrain
-from megatron.training.utils import get_ltor_masks_and_position_ids
-from megatron.training.utils import average_losses_across_data_parallel_group
+from synerfuse.training import get_args, get_retro_args
+from synerfuse.training import print_rank_0
+from synerfuse.training import get_timers
+from synerfuse.training import get_tokenizer
+from synerfuse.core import tensor_parallel
+from synerfuse.core.enums import ModelType
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.utils import get_blend_from_list
+from synerfuse.training import pretrain
+from synerfuse.training.utils import get_ltor_masks_and_position_ids
+from synerfuse.training.utils import average_losses_across_data_parallel_group
 from pretrain_gpt import model_provider, is_dataset_built_on_rank
 from tools.retro.sft.dataset_conv import JsonQADataset, JsonQADatasetConfig, RetroJsonQADataset, RetroJsonQADatasetConfig
 

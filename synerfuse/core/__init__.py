@@ -1,11 +1,11 @@
-import megatron.core.tensor_parallel
-import megatron.core.utils
-from megatron.core import parallel_state
-from megatron.core.distributed import DistributedDataParallel
-from megatron.core.inference_params import InferenceParams
-from megatron.core.model_parallel_config import ModelParallelConfig
-from megatron.core.num_microbatches_calculator import init_num_microbatches_calculator
-from megatron.core.package_info import (
+import synerfuse.core.tensor_parallel
+import synerfuse.core.utils
+from synerfuse.core import parallel_state
+from synerfuse.core.distributed import DistributedDataParallel
+from synerfuse.core.inference_params import InferenceParams
+from synerfuse.core.model_parallel_config import ModelParallelConfig
+from synerfuse.core.num_microbatches_calculator import init_num_microbatches_calculator
+from synerfuse.core.package_info import (
     __contact_emails__,
     __contact_names__,
     __description__,
@@ -18,7 +18,7 @@ from megatron.core.package_info import (
     __shortversion__,
     __version__,
 )
-from megatron.core.timers import Timers
+from synerfuse.core.timers import Timers
 
 # Alias parallel_state as mpu, its legacy name
 mpu = parallel_state

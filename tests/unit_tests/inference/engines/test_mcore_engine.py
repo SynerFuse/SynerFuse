@@ -1,18 +1,18 @@
 from typing import List
-from megatron.core.inference.model_inference_wrappers.inference_wrapper_config import InferenceWrapperConfig
+from synerfuse.core.inference.model_inference_wrappers.inference_wrapper_config import InferenceWrapperConfig
 import torch
 import random 
 import string
 
-from megatron.core.inference.common_inference_params import CommonInferenceParams
-from megatron.core.inference.engines.mcore_engine import MCoreEngine
-from megatron.core.inference.model_inference_wrappers.gpt.gpt_inference_wrapper import GPTInferenceWrapper
-from megatron.core.inference.inference_request import InferenceRequest, Status
-from megatron.core.inference.text_generation_controllers.simple_text_generation_controller import SimpleTextGenerationController
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec
-from megatron.core.models.gpt.gpt_model import GPTModel
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.inference.common_inference_params import CommonInferenceParams
+from synerfuse.core.inference.engines.mcore_engine import MCoreEngine
+from synerfuse.core.inference.model_inference_wrappers.gpt.gpt_inference_wrapper import GPTInferenceWrapper
+from synerfuse.core.inference.inference_request import InferenceRequest, Status
+from synerfuse.core.inference.text_generation_controllers.simple_text_generation_controller import SimpleTextGenerationController
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec
+from synerfuse.core.models.gpt.gpt_model import GPTModel
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 from tests.unit_tests.test_utilities import Utils
 from unittest import mock
 

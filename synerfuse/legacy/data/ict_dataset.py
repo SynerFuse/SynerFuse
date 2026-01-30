@@ -4,10 +4,10 @@ import random
 import numpy as np
 from torch.utils.data import Dataset
 
-from megatron.training import get_tokenizer
-from megatron.training import get_args
-from megatron.legacy.data.dataset_utils import get_indexed_dataset_
-from megatron.legacy.data.realm_dataset_utils import get_block_samples_mapping
+from synerfuse.training import get_tokenizer
+from synerfuse.training import get_args
+from synerfuse.legacy.data.dataset_utils import get_indexed_dataset_
+from synerfuse.legacy.data.realm_dataset_utils import get_block_samples_mapping
 
 def make_attention_mask(source_block, target_block):
     """

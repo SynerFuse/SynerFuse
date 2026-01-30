@@ -7,8 +7,8 @@ import random
 import torch
 import numpy as np
 from torch.utils.data import Dataset
-from megatron.training import get_args
-from megatron.core import mpu
+from synerfuse.training import get_args
+from synerfuse.core import mpu
 
 
 def build_pretraining_data_loader(dataset, consumed_samples):

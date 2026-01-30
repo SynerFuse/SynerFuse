@@ -7,7 +7,7 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 )
 
-from megatron.core.datasets.indexed_dataset import (
+from synerfuse.core.datasets.indexed_dataset import (
     IndexedDataset,
     IndexedDatasetBuilder,
     get_bin_path,

@@ -1,6 +1,6 @@
 import torch
 
-from megatron.core import parallel_state
+from synerfuse.core import parallel_state
 
 
 def _is_cuda(tensor):

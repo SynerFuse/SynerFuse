@@ -13,14 +13,14 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from megatron.core.datasets.retro.config import RetroPreprocessingConfig
-from megatron.core.datasets.retro.external_libs import faiss
-from megatron.core.datasets.retro.index.index import Index
-from megatron.core.datasets.retro.index.utils import (
+from synerfuse.core.datasets.retro.config import RetroPreprocessingConfig
+from synerfuse.core.datasets.retro.external_libs import faiss
+from synerfuse.core.datasets.retro.index.index import Index
+from synerfuse.core.datasets.retro.index.utils import (
     get_training_data_merged_path,
     num_samples_to_block_ranges,
 )
-from megatron.core.datasets.retro.utils import GPTToTextDataset, log_retro_rank_0
+from synerfuse.core.datasets.retro.utils import GPTToTextDataset, log_retro_rank_0
 
 
 class FaissBaseIndex(Index):

@@ -13,8 +13,8 @@ sys.path.append(
         )
     )
 )
-from megatron.training import get_args
-from megatron.training.initialize import initialize_megatron
+from synerfuse.training import get_args
+from synerfuse.training.initialize import initialize_megatron
 
 def get_tasks_args(parser):
     """Provide extra arguments required for tasks."""

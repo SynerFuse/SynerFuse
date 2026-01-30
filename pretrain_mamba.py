@@ -5,27 +5,27 @@ import os
 import torch
 from functools import partial
 
-from megatron.training import get_args
-from megatron.training import print_rank_0
-from megatron.training import get_timers
-from megatron.training import get_tokenizer
-from megatron.core import mpu
-# from megatron.core import parallel_state
-from megatron.core.enums import ModelType
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.utils import get_blend_from_list
-from megatron.core.datasets.gpt_dataset import GPTDatasetConfig
-from megatron.core.datasets.gpt_dataset import MockGPTDataset, GPTDataset
-from megatron.core.models.mamba import MambaModel
-from megatron.training import pretrain
-from megatron.core.utils import StragglerDetector
-from megatron.core.transformer.spec_utils import import_module
-from megatron.training.utils import (
+from synerfuse.training import get_args
+from synerfuse.training import print_rank_0
+from synerfuse.training import get_timers
+from synerfuse.training import get_tokenizer
+from synerfuse.core import mpu
+# from synerfuse.core import parallel_state
+from synerfuse.core.enums import ModelType
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.utils import get_blend_from_list
+from synerfuse.core.datasets.gpt_dataset import GPTDatasetConfig
+from synerfuse.core.datasets.gpt_dataset import MockGPTDataset, GPTDataset
+from synerfuse.core.models.mamba import MambaModel
+from synerfuse.training import pretrain
+from synerfuse.core.utils import StragglerDetector
+from synerfuse.core.transformer.spec_utils import import_module
+from synerfuse.training.utils import (
     get_batch_on_this_cp_rank,
     get_batch_on_this_tp_rank,
 )
-from megatron.training.arguments import core_transformer_config_from_args
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
+from synerfuse.training.arguments import core_transformer_config_from_args
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
 
 
 stimer = StragglerDetector()

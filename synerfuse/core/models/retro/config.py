@@ -9,7 +9,7 @@ from importlib.metadata import version
 
 from pkg_resources import packaging
 
-from megatron.core.transformer import TransformerConfig
+from synerfuse.core.transformer import TransformerConfig
 
 
 @dataclass

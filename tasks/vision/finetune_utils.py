@@ -4,20 +4,20 @@
 
 import torch
 import torch.nn.functional as F
-from megatron.training import get_args
-from megatron.training import print_rank_0
-from megatron.training import get_timers
-from megatron.training import utils
-from megatron.core import mpu
-from megatron.training.checkpointing import load_checkpoint
-from megatron.training.checkpointing import save_checkpoint
-from megatron.training import evaluate_and_print_results
-from megatron.training import setup_model_and_optimizer
-from megatron.training import train_step
-from megatron.training import training_log
-from megatron.training.utils import check_adlr_autoresume_termination
-from megatron.training.utils import average_losses_across_data_parallel_group, print_params_min_max_norm
-from megatron.core.enums import ModelType
+from synerfuse.training import get_args
+from synerfuse.training import print_rank_0
+from synerfuse.training import get_timers
+from synerfuse.training import utils
+from synerfuse.core import mpu
+from synerfuse.training.checkpointing import load_checkpoint
+from synerfuse.training.checkpointing import save_checkpoint
+from synerfuse.training import evaluate_and_print_results
+from synerfuse.training import setup_model_and_optimizer
+from synerfuse.training import train_step
+from synerfuse.training import training_log
+from synerfuse.training.utils import check_adlr_autoresume_termination
+from synerfuse.training.utils import average_losses_across_data_parallel_group, print_params_min_max_norm
+from synerfuse.core.enums import ModelType
 
 def process_batch(batch):
     """Process batch and produce inputs for the model."""

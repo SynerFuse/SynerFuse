@@ -9,22 +9,22 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
 import torch
-from megatron.training import get_args
-from megatron.training import get_tokenizer
-from megatron.training import print_rank_0
-from megatron.training.checkpointing import load_checkpoint
-from megatron.core import mpu
-from megatron.training.initialize import initialize_megatron
-from megatron.legacy.model import GPTModel
-from megatron.training import get_model
-from megatron.inference.text_generation import generate_and_post_process
-from megatron.training.arguments import core_transformer_config_from_args
-from megatron.core.models.gpt import GPTModel
+from synerfuse.training import get_args
+from synerfuse.training import get_tokenizer
+from synerfuse.training import print_rank_0
+from synerfuse.training.checkpointing import load_checkpoint
+from synerfuse.core import mpu
+from synerfuse.training.initialize import initialize_megatron
+from synerfuse.legacy.model import GPTModel
+from synerfuse.training import get_model
+from synerfuse.inference.text_generation import generate_and_post_process
+from synerfuse.training.arguments import core_transformer_config_from_args
+from synerfuse.core.models.gpt import GPTModel
 from typing import Union
-import megatron.legacy.model
-from megatron.core.transformer.spec_utils import import_module
-from megatron.training.arguments import core_transformer_config_from_args
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec, get_gpt_layer_local_spec
+import synerfuse.legacy.model
+from synerfuse.core.transformer.spec_utils import import_module
+from synerfuse.training.arguments import core_transformer_config_from_args
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec, get_gpt_layer_local_spec
 
 def model_provider(pre_process=True, post_process=True) -> Union[GPTModel, megatron.legacy.model.GPTModel]:
     """Builds the model.

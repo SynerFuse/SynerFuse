@@ -3,8 +3,8 @@ import math
 import pytest
 import torch
 
-from megatron.core import parallel_state
-from megatron.core.distributed import DistributedDataParallelConfig, ParamAndGradBuffer
+from synerfuse.core import parallel_state
+from synerfuse.core.distributed import DistributedDataParallelConfig, ParamAndGradBuffer
 from tests.unit_tests.test_utilities import Utils, TestModel
 
 

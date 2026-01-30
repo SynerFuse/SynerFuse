@@ -10,21 +10,21 @@ import numpy as np
 import torch
 import torch.distributed as dist
 
-from megatron.core.dist_checkpointing import ShardedTensor
-from megatron.core.dist_checkpointing.core import CheckpointingException
-from megatron.core.dist_checkpointing.dict_utils import (
+from synerfuse.core.dist_checkpointing import ShardedTensor
+from synerfuse.core.dist_checkpointing.core import CheckpointingException
+from synerfuse.core.dist_checkpointing.dict_utils import (
     dict_list_map_inplace,
     extract_matching_values,
     merge,
     nested_values,
 )
-from megatron.core.dist_checkpointing.mapping import ShardedStateDict, StateDict, is_main_replica
-from megatron.core.dist_checkpointing.strategies.base import (
+from synerfuse.core.dist_checkpointing.mapping import ShardedStateDict, StateDict, is_main_replica
+from synerfuse.core.dist_checkpointing.strategies.base import (
     AsyncSaveShardedStrategy,
     LoadShardedStrategy,
     SaveShardedStrategy,
 )
-from megatron.core.dist_checkpointing.validation import (
+from synerfuse.core.dist_checkpointing.validation import (
     determine_global_metadata,
     validate_sharding_integrity,
 )

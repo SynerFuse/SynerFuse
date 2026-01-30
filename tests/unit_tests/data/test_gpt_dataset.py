@@ -4,7 +4,7 @@
 
 import torch
 
-from megatron.core.datasets.utils import compile_helpers
+from synerfuse.core.datasets.utils import compile_helpers
 from tests.unit_tests.test_utilities import Utils
 
 if torch.distributed.is_available():
@@ -23,9 +23,9 @@ import random
 
 import numpy
 
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.gpt_dataset import GPTDatasetConfig, MockGPTDataset
-from megatron.training.tokenizer.tokenizer import _NullTokenizer
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.gpt_dataset import GPTDatasetConfig, MockGPTDataset
+from synerfuse.training.tokenizer.tokenizer import _NullTokenizer
 
 _MOCK_VOCAB_SIZE = 8192
 

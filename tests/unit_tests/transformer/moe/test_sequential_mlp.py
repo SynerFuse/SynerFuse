@@ -4,11 +4,11 @@ import pytest
 
 import torch
 
-from megatron.core.transformer.moe.moe_layer import MoELayer
+from synerfuse.core.transformer.moe.moe_layer import MoELayer
 from tests.unit_tests.test_utilities import Utils
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
 
 class TestParallelSequentialMLP:
 

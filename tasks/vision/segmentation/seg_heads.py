@@ -4,10 +4,10 @@ import einops
 import torch
 import apex
 import torch.nn.functional as F
-from megatron.training import get_args
-from megatron.legacy.model import LayerNorm
-from megatron.legacy.model.module import MegatronModule
-from megatron.legacy.model.vision.utils import resize
+from synerfuse.training import get_args
+from synerfuse.legacy.model import LayerNorm
+from synerfuse.legacy.model.module import MegatronModule
+from synerfuse.legacy.model.vision.utils import resize
 
 
 class SetrSegmentationHead(MegatronModule):

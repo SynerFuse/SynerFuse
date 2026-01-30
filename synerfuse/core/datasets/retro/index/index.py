@@ -19,9 +19,9 @@ from typing import List, Tuple
 import numpy as np
 import torch
 
-from megatron.core.datasets.retro.config import Embedder, RetroPreprocessingConfig
-from megatron.core.datasets.retro.external_libs import faiss
-from megatron.core.datasets.retro.utils import GPTToTextDataset
+from synerfuse.core.datasets.retro.config import Embedder, RetroPreprocessingConfig
+from synerfuse.core.datasets.retro.external_libs import faiss
+from synerfuse.core.datasets.retro.utils import GPTToTextDataset
 
 from .utils import get_index_dir
 

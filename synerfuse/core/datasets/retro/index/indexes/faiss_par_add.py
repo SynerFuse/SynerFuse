@@ -17,10 +17,10 @@ import psutil
 import torch
 from tqdm import tqdm
 
-from megatron.core.datasets.retro.config import Embedder, RetroPreprocessingConfig
-from megatron.core.datasets.retro.external_libs import faiss, h5py
-from megatron.core.datasets.retro.index.utils import get_added_code_paths, get_added_codes_dir
-from megatron.core.datasets.retro.utils import (
+from synerfuse.core.datasets.retro.config import Embedder, RetroPreprocessingConfig
+from synerfuse.core.datasets.retro.external_libs import faiss, h5py
+from synerfuse.core.datasets.retro.index.utils import get_added_code_paths, get_added_codes_dir
+from synerfuse.core.datasets.retro.utils import (
     GPTToTextDataset,
     get_blocks_by_rank,
     log_retro_rank_0,

@@ -13,11 +13,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from megatron.core.parallel_state import get_tensor_model_parallel_world_size
-from megatron.core.tensor_parallel import get_cuda_rng_tracker
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.spec_utils import ModuleSpec, build_module
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.parallel_state import get_tensor_model_parallel_world_size
+from synerfuse.core.tensor_parallel import get_cuda_rng_tracker
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.spec_utils import ModuleSpec, build_module
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 
 try:
     from mamba_ssm.ops.triton.selective_state_update import selective_state_update

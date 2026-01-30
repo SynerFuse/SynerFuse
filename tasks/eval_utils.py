@@ -8,10 +8,10 @@ from functools import partial
 
 import torch
 
-from megatron.training import get_args
-from megatron.training import print_rank_last, is_last_rank
-from megatron.core import mpu
-from megatron.schedules import get_forward_backward_func
+from synerfuse.training import get_args
+from synerfuse.training import print_rank_last, is_last_rank
+from synerfuse.core import mpu
+from synerfuse.schedules import get_forward_backward_func
 from tasks.finetune_utils import build_data_loader
 from tasks.finetune_utils import process_batch
 

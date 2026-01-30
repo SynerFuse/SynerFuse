@@ -4,7 +4,7 @@
 
 import torch
 
-from megatron.core.datasets.utils import compile_helpers
+from synerfuse.core.datasets.utils import compile_helpers
 from tests.unit_tests.test_utilities import Utils
 
 if torch.distributed.is_available():
@@ -27,10 +27,10 @@ from typing import Dict, Optional
 import numpy
 import torch
 
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
-from megatron.core.datasets.megatron_dataset import LowLevelDataset, MegatronDataset
-from megatron.core.datasets.utils import Split, get_blend_from_list
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
+from synerfuse.core.datasets.megatron_dataset import LowLevelDataset, MegatronDataset
+from synerfuse.core.datasets.utils import Split, get_blend_from_list
 
 _NUM_DATASETS = 10
 

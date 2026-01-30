@@ -5,15 +5,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from megatron.core.transformer.transformer_config import TransformerConfig
-    from megatron.core.transformer.transformer_block import TransformerBlock
+    from synerfuse.core.transformer.transformer_config import TransformerConfig
+    from synerfuse.core.transformer.transformer_block import TransformerBlock
 
 import logging
 
 import torch
 from torch import Tensor, nn
 
-from megatron.core import parallel_state
+from synerfuse.core import parallel_state
 
 logger = logging.getLogger(__name__)
 

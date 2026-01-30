@@ -258,7 +258,7 @@ Refer to [gpt_inference_wrapper.py](../../megatron/core/inference/model_inferenc
 We use  [common inference params](../../megatron/core/inference/common_inference_params.py) for text generation. Customize this if you want to change top_p, top_k, number of tokens to generate etc. If you want to add other attributes that you would use in the inference loop, you can do that as shown below
 
 ```
-from megatron.core.inference.common_inference_params import CommonInferenceParams
+from synerfuse.core.inference.common_inference_params import CommonInferenceParams
 
 c = CommonInferenceParams(temperature=0.5)
 c.add_attributes({'min_length':4, 'eod_id':153})

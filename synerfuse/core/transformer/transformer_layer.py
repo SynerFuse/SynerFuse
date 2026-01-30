@@ -6,15 +6,15 @@ from typing import Dict, Optional, Union
 
 import torch
 
-from megatron.core import parallel_state
-from megatron.core.dist_checkpointing.mapping import ShardedStateDict
-from megatron.core.dist_checkpointing.utils import apply_prefix_mapping
-from megatron.core.transformer.enums import AttnMaskType
-from megatron.core.transformer.identity_op import IdentityFuncOp, IdentityOp
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.spec_utils import ModuleSpec, build_module
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.utils import make_viewless_tensor
+from synerfuse.core import parallel_state
+from synerfuse.core.dist_checkpointing.mapping import ShardedStateDict
+from synerfuse.core.dist_checkpointing.utils import apply_prefix_mapping
+from synerfuse.core.transformer.enums import AttnMaskType
+from synerfuse.core.transformer.identity_op import IdentityFuncOp, IdentityOp
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.spec_utils import ModuleSpec, build_module
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.utils import make_viewless_tensor
 
 
 @dataclass

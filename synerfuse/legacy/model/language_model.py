@@ -5,10 +5,10 @@
 import torch
 import torch.nn.functional as F
 
-from megatron.training import get_args
-from megatron.core import mpu, tensor_parallel
-from megatron.core.enums import ModelType
-from megatron.core.models.common.embeddings.rotary_pos_embedding import RotaryEmbedding
+from synerfuse.training import get_args
+from synerfuse.core import mpu, tensor_parallel
+from synerfuse.core.enums import ModelType
+from synerfuse.core.models.common.embeddings.rotary_pos_embedding import RotaryEmbedding
 
 from .enums import AttnMaskType, LayerType
 from .module import MegatronModule

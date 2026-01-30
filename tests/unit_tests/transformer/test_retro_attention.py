@@ -3,18 +3,18 @@
 import torch
 import types
 
-from megatron.core.models.retro import RetroConfig, get_retro_decoder_block_spec
-from megatron.core.models.retro.decoder_attention import (
+from synerfuse.core.models.retro import RetroConfig, get_retro_decoder_block_spec
+from synerfuse.core.models.retro.decoder_attention import (
     RetroDecoderCrossAttention,
     RetroDecoderBiasDropoutAdd,
 )
-from megatron.core.models.retro.encoder_attention import (
+from synerfuse.core.models.retro.encoder_attention import (
     RetroEncoderCrossAttention,
     RetroEncoderBiasDropoutAdd,
     RetroEncoderLayerNorm,
 )
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.transformer.transformer_block import TransformerBlock
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.transformer.transformer_block import TransformerBlock
 from tests.unit_tests.test_utilities import Utils
 
 

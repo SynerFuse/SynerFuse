@@ -1,25 +1,25 @@
 import os
-from megatron.core.inference.model_inference_wrappers.inference_wrapper_config import InferenceWrapperConfig
+from synerfuse.core.inference.model_inference_wrappers.inference_wrapper_config import InferenceWrapperConfig
 from pretrain_gpt import model_provider
 import torch
 import sys
 from argparse import Namespace
-from megatron.core.inference.engines.abstract_engine import AbstractEngine
-from megatron.core.inference.engines.mcore_engine import MCoreEngine
-from megatron.core.inference.common_inference_params import CommonInferenceParams
-from megatron.core.inference.model_inference_wrappers.gpt.gpt_inference_wrapper import GPTInferenceWrapper
-from megatron.core.inference.inference_request import InferenceRequest
-from megatron.core.inference.text_generation_controllers.simple_text_generation_controller import SimpleTextGenerationController
-from megatron.core.transformer.module import MegatronModule
+from synerfuse.core.inference.engines.abstract_engine import AbstractEngine
+from synerfuse.core.inference.engines.mcore_engine import MCoreEngine
+from synerfuse.core.inference.common_inference_params import CommonInferenceParams
+from synerfuse.core.inference.model_inference_wrappers.gpt.gpt_inference_wrapper import GPTInferenceWrapper
+from synerfuse.core.inference.inference_request import InferenceRequest
+from synerfuse.core.inference.text_generation_controllers.simple_text_generation_controller import SimpleTextGenerationController
+from synerfuse.core.transformer.module import MegatronModule
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
 
-from megatron.training import get_args
-from megatron.training import get_tokenizer
-from megatron.training.checkpointing import load_checkpoint
-from megatron.core import mpu
-from megatron.training.initialize import initialize_megatron
-from megatron.training import get_model
+from synerfuse.training import get_args
+from synerfuse.training import get_tokenizer
+from synerfuse.training.checkpointing import load_checkpoint
+from synerfuse.core import mpu
+from synerfuse.training.initialize import initialize_megatron
+from synerfuse.training import get_model
 from typing import List
 
 def add_text_generate_args(parser):

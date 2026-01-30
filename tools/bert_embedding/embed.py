@@ -9,14 +9,14 @@ from torch.utils.data import BatchSampler, DataLoader, SequentialSampler, Subset
 from torch.utils.data._utils.collate import default_collate
 from tqdm import tqdm
 
-from megatron.training import get_args, get_tokenizer, print_rank_0
-from megatron import core
-from megatron.training.arguments import core_transformer_config_from_args
-from megatron.core.datasets.retro.utils import get_blocks_by_rank
-from megatron.core.enums import ModelType
-from megatron.core.pipeline_parallel import get_forward_backward_func
-from megatron.legacy.model import BertModel
-from megatron.training.training import setup_model_and_optimizer
+from synerfuse.training import get_args, get_tokenizer, print_rank_0
+from synerfuse import core
+from synerfuse.training.arguments import core_transformer_config_from_args
+from synerfuse.core.datasets.retro.utils import get_blocks_by_rank
+from synerfuse.core.enums import ModelType
+from synerfuse.core.pipeline_parallel import get_forward_backward_func
+from synerfuse.legacy.model import BertModel
+from synerfuse.training.training import setup_model_and_optimizer
 from pretrain_bert import model_provider, get_batch, loss_func, forward_step
 
 from .dataset import BertEmbeddingDataset

@@ -6,9 +6,9 @@ import os
 import sys
 import torch
 
-from megatron.core import Timers, init_num_microbatches_calculator
-from megatron.training import dist_signal_handler
-from megatron.training.tokenizer import build_tokenizer
+from synerfuse.core import Timers, init_num_microbatches_calculator
+from synerfuse.training import dist_signal_handler
+from synerfuse.training.tokenizer import build_tokenizer
 
 _GLOBAL_ARGS = None
 _GLOBAL_TOKENIZER = None

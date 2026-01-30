@@ -8,12 +8,12 @@ from typing import Callable, List, Optional, Tuple, Type
 import torch
 from torch import Tensor
 
-from megatron.core import InferenceParams
-from megatron.core.fusions.fused_bias_dropout import get_bias_dropout_add
-from megatron.core.models.retro.base_attention import BaseRetroCrossAttention
-from megatron.core.models.retro.config import RetroConfig
-from megatron.core.models.retro.utils import get_all_true_mask
-from megatron.core.transformer.module import MegatronModule
+from synerfuse.core import InferenceParams
+from synerfuse.core.fusions.fused_bias_dropout import get_bias_dropout_add
+from synerfuse.core.models.retro.base_attention import BaseRetroCrossAttention
+from synerfuse.core.models.retro.config import RetroConfig
+from synerfuse.core.models.retro.utils import get_all_true_mask
+from synerfuse.core.transformer.module import MegatronModule
 
 
 class RetroEncoderCrossAttention(BaseRetroCrossAttention):

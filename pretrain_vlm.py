@@ -6,17 +6,17 @@ from types import SimpleNamespace
 
 import torch
 
-from megatron.core import tensor_parallel
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.gpt_dataset import MockGPTLowLevelDataset
-from megatron.core.datasets.multimodal_dataset import MockMultimodalDataset, MultimodalDatasetConfig
-from megatron.core.enums import ModelType
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
-from megatron.core.models.multimodal.llava_model import LLaVAModel
-from megatron.core.models.vision.vit_layer_specs import get_vit_layer_with_transformer_engine_spec
-from megatron.core.transformer.spec_utils import import_module
-from megatron.training import get_args, get_timers, get_tokenizer, pretrain, print_rank_0
-from megatron.training.arguments import core_transformer_config_from_args
+from synerfuse.core import tensor_parallel
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.gpt_dataset import MockGPTLowLevelDataset
+from synerfuse.core.datasets.multimodal_dataset import MockMultimodalDataset, MultimodalDatasetConfig
+from synerfuse.core.enums import ModelType
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
+from synerfuse.core.models.multimodal.llava_model import LLaVAModel
+from synerfuse.core.models.vision.vit_layer_specs import get_vit_layer_with_transformer_engine_spec
+from synerfuse.core.transformer.spec_utils import import_module
+from synerfuse.training import get_args, get_timers, get_tokenizer, pretrain, print_rank_0
+from synerfuse.training.arguments import core_transformer_config_from_args
 from pretrain_gpt import is_dataset_built_on_rank, loss_func
 
 

@@ -4,7 +4,7 @@
 
 import os
 
-from megatron.core.datasets.megatron_dataset import MegatronDataset
+from synerfuse.core.datasets.megatron_dataset import MegatronDataset
 
 
 def get_query_dir(project_dir: str) -> str:

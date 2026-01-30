@@ -5,10 +5,10 @@ from typing import List, Optional, Tuple
 
 import torch
 
-from megatron.core import parallel_state, tensor_parallel
-from megatron.core.tensor_parallel.mappings import _gather_along_first_dim_expert_parallel
-from megatron.core.transformer.moe.moe_utils import moe_gather, moe_scatter, permute, unpermute
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core import parallel_state, tensor_parallel
+from synerfuse.core.tensor_parallel.mappings import _gather_along_first_dim_expert_parallel
+from synerfuse.core.transformer.moe.moe_utils import moe_gather, moe_scatter, permute, unpermute
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 
 
 class MoETokenDispatcher:

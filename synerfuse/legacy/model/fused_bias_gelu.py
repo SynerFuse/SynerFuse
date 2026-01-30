@@ -1,7 +1,7 @@
 # Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
 
 import torch
-from megatron.core.jit import jit_fuser
+from synerfuse.core.jit import jit_fuser
 
 
 ###### BIAS GELU FUSION/ NO AUTOGRAD ################

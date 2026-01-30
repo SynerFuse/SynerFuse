@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 
 import types
 
-from megatron.core.datasets.megatron_tokenizer import MegatronTokenizer
+from synerfuse.core.datasets.megatron_tokenizer import MegatronTokenizer
 
 from .bert_tokenization import FullTokenizer as FullBertTokenizer
 from .gpt2_tokenization import GPT2Tokenizer

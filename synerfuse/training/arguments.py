@@ -12,13 +12,13 @@ import types
 
 import torch.nn.functional as F
 
-from megatron.core.dist_checkpointing.validation import StrictHandling
-from megatron.core.models.retro.utils import (
+from synerfuse.core.dist_checkpointing.validation import StrictHandling
+from synerfuse.core.models.retro.utils import (
     get_config_path as get_retro_config_path,
     get_gpt_data_dir as get_retro_data_dir,
 )
-from megatron.core.transformer import TransformerConfig
-from megatron.training.activations import squared_relu
+from synerfuse.core.transformer import TransformerConfig
+from synerfuse.training.activations import squared_relu
 
 
 def parse_args(extra_args_provider=None, ignore_unknown_args=False):
@@ -1343,7 +1343,7 @@ def _add_training_args(parser):
                        dest='gradient_accumulation_fusion')
     group.add_argument('--use-mcore-models', action='store_true',
                        dest='deprecated_use_mcore_models',
-                       help='DEPRECATED. Use the implementation from megatron core.'
+                       help='DEPRECATED. Use the implementation from synerfuse core.'
                        'Now ignored and mcore models are the default, use '
                        '--use-legacy-models to not use core models.')
     group.add_argument('--use-legacy-models', action='store_true',

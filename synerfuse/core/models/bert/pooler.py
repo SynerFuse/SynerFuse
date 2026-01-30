@@ -1,10 +1,10 @@
 import torch
 from torch import Tensor
 
-from megatron.core import tensor_parallel
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.transformer.utils import get_linear_layer
+from synerfuse.core import tensor_parallel
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.utils import get_linear_layer
 
 
 class Pooler(MegatronModule):

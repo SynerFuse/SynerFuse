@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from megatron.core.transformer.moe.moe_utils import permute, unpermute
+from synerfuse.core.transformer.moe.moe_utils import permute, unpermute
 from tests.unit_tests.test_utilities import Utils
 from tests.unit_tests.transformer.moe.test_token_dispatcher import MoEModelTestContainer
 

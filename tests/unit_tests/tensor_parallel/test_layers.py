@@ -2,8 +2,8 @@
 import pytest
 import torch
 
-from megatron.core.tensor_parallel.layers import linear_with_frozen_weight
-from megatron.core.tensor_parallel.mappings import gather_from_tensor_model_parallel_region
+from synerfuse.core.tensor_parallel.layers import linear_with_frozen_weight
+from synerfuse.core.tensor_parallel.mappings import gather_from_tensor_model_parallel_region
 from tests.unit_tests.test_utilities import Utils
 
 

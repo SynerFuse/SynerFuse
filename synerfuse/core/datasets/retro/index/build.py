@@ -15,13 +15,13 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from megatron.core.datasets.retro.config import RetroPreprocessingConfig
-from megatron.core.datasets.retro.db.utils import (
+from synerfuse.core.datasets.retro.config import RetroPreprocessingConfig
+from synerfuse.core.datasets.retro.db.utils import (
     get_merged_sampled_dataset,
     get_merged_train_dataset,
 )
-from megatron.core.datasets.retro.external_libs import h5py
-from megatron.core.datasets.retro.utils import GPTToTextDataset
+from synerfuse.core.datasets.retro.external_libs import h5py
+from synerfuse.core.datasets.retro.utils import GPTToTextDataset
 
 from .factory import IndexFactory
 from .utils import (

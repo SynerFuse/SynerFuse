@@ -3,11 +3,11 @@ from typing import List, OrderedDict, Tuple
 import torch
 import torch.nn.functional as F
 
-from megatron.core import parallel_state
-from megatron.core.inference.common_inference_params import CommonInferenceParams
-from megatron.core.inference.communication_utils import broadcast_from_last_pipeline_stage
-from megatron.core.inference.inference_request import InferenceRequest, Status
-from megatron.core.inference.model_inference_wrappers.abstract_model_inference_wrapper import (
+from synerfuse.core import parallel_state
+from synerfuse.core.inference.common_inference_params import CommonInferenceParams
+from synerfuse.core.inference.communication_utils import broadcast_from_last_pipeline_stage
+from synerfuse.core.inference.inference_request import InferenceRequest, Status
+from synerfuse.core.inference.model_inference_wrappers.abstract_model_inference_wrapper import (
     AbstractModelInferenceWrapper,
 )
 

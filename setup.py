@@ -6,7 +6,7 @@ import subprocess
 import setuptools
 from setuptools import Extension
 
-spec = importlib.util.spec_from_file_location('package_info', 'megatron/core/package_info.py')
+spec = importlib.util.spec_from_file_location('package_info', 'synerfuse/core/package_info.py')
 package_info = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(package_info)
 
@@ -23,7 +23,7 @@ __repository_url__ = package_info.__repository_url__
 __version__ = package_info.__version__
 
 
-with open("megatron/core/README.md", "r", encoding='utf-8') as fh:
+with open("synerfuse/core/README.md", "r", encoding='utf-8') as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
 
@@ -93,11 +93,11 @@ setuptools.setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
     ],
-    packages=setuptools.find_namespace_packages(include=["megatron.core", "megatron.core.*"]),
+    packages=setuptools.find_namespace_packages(include=["synerfuse.core", "synerfuse.core.*"]),
     ext_modules=[
         Extension(
-            "megatron.core.datasets.helpers",
-            sources=["megatron/core/datasets/helpers.cpp"],
+            "synerfuse.core.datasets.helpers",
+            sources=["synerfuse/core/datasets/helpers.cpp"],
             language="c++",
             extra_compile_args=extra_compile_args,
         )

@@ -2,7 +2,7 @@
 
 """The IndexFactory constructs an index from an index type string."""
 
-from megatron.core.datasets.retro.index.index import Index
+from synerfuse.core.datasets.retro.index.index import Index
 
 from .indexes import FaissBaseIndex, FaissParallelAddIndex
 

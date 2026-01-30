@@ -4,7 +4,7 @@
 
 from dataclasses import dataclass
 
-from megatron.core.transformer import TransformerConfig
+from synerfuse.core.transformer import TransformerConfig
 
 from .bert_embedders import RetroBertEmbedders
 from .gpt_chunk_datasets import RetroGPTChunkDatasets

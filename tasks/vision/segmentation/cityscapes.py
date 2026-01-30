@@ -41,7 +41,7 @@ import numpy as np
 from torchvision.datasets.utils import extract_archive, verify_str_arg, iterable_to_str
 from torchvision.datasets import VisionDataset
 from PIL import Image
-from megatron.training import print_rank_0
+from synerfuse.training import print_rank_0
 
 
 class Cityscapes(VisionDataset):

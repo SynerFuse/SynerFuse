@@ -6,28 +6,28 @@ import torch
 from functools import partial
 
 from typing import Union
-from megatron.training import get_args
-from megatron.training import print_rank_0
-from megatron.training import get_timers
-from megatron.training import get_tokenizer
-from megatron.core import mpu
-from megatron.core.enums import ModelType
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.utils import get_blend_from_list
-from megatron.core.datasets.gpt_dataset import GPTDatasetConfig
-from megatron.core.datasets.gpt_dataset import MockGPTDataset, GPTDataset
-import megatron.legacy.model
-from megatron.core.models.gpt import GPTModel
-from megatron.training import pretrain
-from megatron.core.utils import StragglerDetector
-from megatron.core.transformer.spec_utils import import_module
-from megatron.training.utils import (
+from synerfuse.training import get_args
+from synerfuse.training import print_rank_0
+from synerfuse.training import get_timers
+from synerfuse.training import get_tokenizer
+from synerfuse.core import mpu
+from synerfuse.core.enums import ModelType
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.utils import get_blend_from_list
+from synerfuse.core.datasets.gpt_dataset import GPTDatasetConfig
+from synerfuse.core.datasets.gpt_dataset import MockGPTDataset, GPTDataset
+import synerfuse.legacy.model
+from synerfuse.core.models.gpt import GPTModel
+from synerfuse.training import pretrain
+from synerfuse.core.utils import StragglerDetector
+from synerfuse.core.transformer.spec_utils import import_module
+from synerfuse.training.utils import (
     get_batch_on_this_cp_rank,
     get_batch_on_this_tp_rank,
 )
-from megatron.training.arguments import core_transformer_config_from_args
-from megatron.training.yaml_arguments import core_transformer_config_from_yaml
-from megatron.core.models.gpt.gpt_layer_specs import (
+from synerfuse.training.arguments import core_transformer_config_from_args
+from synerfuse.training.yaml_arguments import core_transformer_config_from_yaml
+from synerfuse.core.models.gpt.gpt_layer_specs import (
     get_gpt_layer_local_spec,
     get_gpt_layer_with_transformer_engine_spec,
 )
@@ -35,7 +35,7 @@ from megatron.core.models.gpt.gpt_layer_specs import (
 
 stimer = StragglerDetector()
 
-def model_provider(pre_process=True, post_process=True) -> Union[GPTModel, megatron.legacy.model.GPTModel]:
+def model_provider(pre_process=True, post_process=True) -> Union[GPTModel, synerfuse.legacy.model.GPTModel]:
     """Builds the model.
 
     If you set the use_legacy_models to True, it will return the legacy GPT model and if not the mcore GPT model.
@@ -46,7 +46,7 @@ def model_provider(pre_process=True, post_process=True) -> Union[GPTModel, megat
 
 
     Returns:
-        Union[GPTModel, megatron.legacy.model.GPTModel]: The returned model
+        Union[GPTModel, synerfuse.legacy.model.GPTModel]: The returned model
     """
     args = get_args()
     use_te = args.transformer_impl == "transformer_engine"
@@ -59,7 +59,7 @@ def model_provider(pre_process=True, post_process=True) -> Union[GPTModel, megat
         config = core_transformer_config_from_args(args)
 
     if args.use_legacy_models:
-        model = megatron.legacy.model.GPTModel(
+        model = synerfuse.legacy.model.GPTModel(
             config,
             num_tokentypes=0,
             parallel_output=True,

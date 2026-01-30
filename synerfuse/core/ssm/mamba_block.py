@@ -12,16 +12,16 @@ from typing import Union
 
 from torch import Tensor, nn
 
-from megatron.core import parallel_state
-from megatron.core.ssm.mamba_hybrid_layer_allocation import Symbols as LayerSymbols
-from megatron.core.ssm.mamba_hybrid_layer_allocation import allocate_layers
-from megatron.core.tensor_parallel import get_cuda_rng_tracker
-from megatron.core.transformer.custom_layers.transformer_engine import TENorm
-from megatron.core.transformer.identity_op import IdentityOp
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.spec_utils import ModuleSpec, build_module
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.utils import make_viewless_tensor
+from synerfuse.core import parallel_state
+from synerfuse.core.ssm.mamba_hybrid_layer_allocation import Symbols as LayerSymbols
+from synerfuse.core.ssm.mamba_hybrid_layer_allocation import allocate_layers
+from synerfuse.core.tensor_parallel import get_cuda_rng_tracker
+from synerfuse.core.transformer.custom_layers.transformer_engine import TENorm
+from synerfuse.core.transformer.identity_op import IdentityOp
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.spec_utils import ModuleSpec, build_module
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.utils import make_viewless_tensor
 
 
 # https://github.com/huggingface/transformers/blob/c28d04e9e252a1a099944e325685f14d242ecdcd/src/transformers/models/gpt2/modeling_gpt2.py#L454

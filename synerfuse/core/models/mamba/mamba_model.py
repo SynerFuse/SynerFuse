@@ -4,13 +4,13 @@ from typing import Literal, Optional
 
 from torch import Tensor
 
-from megatron.core import InferenceParams, tensor_parallel
-from megatron.core.models.common.embeddings.language_model_embedding import LanguageModelEmbedding
-from megatron.core.models.common.embeddings.rotary_pos_embedding import RotaryEmbedding
-from megatron.core.models.common.language_module.language_module import LanguageModule
-from megatron.core.transformer.enums import ModelType
-from megatron.core.transformer.spec_utils import ModuleSpec, build_module
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core import InferenceParams, tensor_parallel
+from synerfuse.core.models.common.embeddings.language_model_embedding import LanguageModelEmbedding
+from synerfuse.core.models.common.embeddings.rotary_pos_embedding import RotaryEmbedding
+from synerfuse.core.models.common.language_module.language_module import LanguageModule
+from synerfuse.core.transformer.enums import ModelType
+from synerfuse.core.transformer.spec_utils import ModuleSpec, build_module
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 
 
 class MambaModel(LanguageModule):

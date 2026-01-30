@@ -10,15 +10,15 @@ import torch
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
 
-from megatron.training import get_args, get_timers, get_tokenizer, print_rank_0
-from megatron.training.arguments import core_transformer_config_from_args
-from megatron.core import mpu, tensor_parallel
-from megatron.core.enums import ModelType
+from synerfuse.training import get_args, get_timers, get_tokenizer, print_rank_0
+from synerfuse.training.arguments import core_transformer_config_from_args
+from synerfuse.core import mpu, tensor_parallel
+from synerfuse.core.enums import ModelType
 from config import get_language_model_config, get_vision_model_config, get_vision_projection_config
-from megatron.core.models.multimodal.llava_model import LLaVAModel
+from synerfuse.core.models.multimodal.llava_model import LLaVAModel
 from layer_specs import get_layer_spec, get_mlp_module_spec, get_layer_spec_te
-from megatron.training import pretrain
-from megatron.training.utils import average_losses_across_data_parallel_group
+from synerfuse.training import pretrain
+from synerfuse.training.utils import average_losses_across_data_parallel_group
 from dataloader_provider import train_valid_test_dataloaders_provider
 
 

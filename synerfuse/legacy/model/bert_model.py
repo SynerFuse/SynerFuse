@@ -4,16 +4,16 @@
 
 import torch
 
-from megatron.training import get_args
-from megatron.core import tensor_parallel
-from megatron.legacy.model.enums import AttnMaskType
-from megatron.legacy.model.language_model import parallel_lm_logits
-from megatron.legacy.model.language_model import get_language_model
-from megatron.legacy.model.utils import get_norm
-from megatron.legacy.model.utils import openai_gelu, erf_gelu
-from megatron.legacy.model.utils import get_linear_layer
-from megatron.legacy.model.utils import init_method_normal
-from megatron.legacy.model.utils import scaled_init_method_normal
+from synerfuse.training import get_args
+from synerfuse.core import tensor_parallel
+from synerfuse.legacy.model.enums import AttnMaskType
+from synerfuse.legacy.model.language_model import parallel_lm_logits
+from synerfuse.legacy.model.language_model import get_language_model
+from synerfuse.legacy.model.utils import get_norm
+from synerfuse.legacy.model.utils import openai_gelu, erf_gelu
+from synerfuse.legacy.model.utils import get_linear_layer
+from synerfuse.legacy.model.utils import init_method_normal
+from synerfuse.legacy.model.utils import scaled_init_method_normal
 from .module import MegatronModule
 
 

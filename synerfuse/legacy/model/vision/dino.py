@@ -12,12 +12,12 @@ import torch
 import numpy as np
 import torch.nn.functional as F
 from torch.nn.init import trunc_normal_
-from megatron.training import get_args, print_rank_0
-from megatron.legacy.model.utils import get_linear_layer
-from megatron.legacy.model.vision.vit_backbone import VitBackbone
-from megatron.legacy.model.module import MegatronModule
-from megatron.legacy.model.vision.mit_backbone import mit_b5_avg
-from megatron.legacy.model.vision.esvit_swin_backbone import get_swin
+from synerfuse.training import get_args, print_rank_0
+from synerfuse.legacy.model.utils import get_linear_layer
+from synerfuse.legacy.model.vision.vit_backbone import VitBackbone
+from synerfuse.legacy.model.module import MegatronModule
+from synerfuse.legacy.model.vision.mit_backbone import mit_b5_avg
+from synerfuse.legacy.model.vision.esvit_swin_backbone import get_swin
 
 
 class DINOLoss(torch.nn.Module):

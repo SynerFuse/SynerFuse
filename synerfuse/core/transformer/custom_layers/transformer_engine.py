@@ -10,19 +10,19 @@ import transformer_engine as te
 from pkg_resources import packaging
 from torch import Tensor
 
-from megatron.core import ModelParallelConfig, parallel_state
-from megatron.core.dist_checkpointing.utils import replace_prefix_for_sharding
-from megatron.core.packed_seq_params import PackedSeqParams
-from megatron.core.parallel_state import (
+from synerfuse.core import ModelParallelConfig, parallel_state
+from synerfuse.core.dist_checkpointing.utils import replace_prefix_for_sharding
+from synerfuse.core.packed_seq_params import PackedSeqParams
+from synerfuse.core.parallel_state import (
     get_context_parallel_global_ranks,
     get_context_parallel_group,
     get_tensor_model_parallel_group,
 )
-from megatron.core.tensor_parallel import get_cuda_rng_tracker, get_expert_parallel_rng_tracker_name
-from megatron.core.tensor_parallel.utils import divide
-from megatron.core.transformer.enums import AttnMaskType
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.transformer.utils import make_sharded_tensors_for_checkpoint
+from synerfuse.core.tensor_parallel import get_cuda_rng_tracker, get_expert_parallel_rng_tracker_name
+from synerfuse.core.tensor_parallel.utils import divide
+from synerfuse.core.transformer.enums import AttnMaskType
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.utils import make_sharded_tensors_for_checkpoint
 
 
 def get_te_version():

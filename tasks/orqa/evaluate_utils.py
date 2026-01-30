@@ -2,12 +2,12 @@
 
 import torch
 
-from megatron.training import get_args, print_rank_0
-from megatron.training.checkpointing import load_biencoder_checkpoint
-from megatron.legacy.data.orqa_wiki_dataset import get_open_retrieval_wiki_dataset
-from megatron.legacy.data.realm_index import OpenRetreivalDataStore, FaissMIPSIndex
-from megatron.legacy.model.biencoder_model import get_model_provider
-from megatron.training import get_model
+from synerfuse.training import get_args, print_rank_0
+from synerfuse.training.checkpointing import load_biencoder_checkpoint
+from synerfuse.legacy.data.orqa_wiki_dataset import get_open_retrieval_wiki_dataset
+from synerfuse.legacy.data.realm_index import OpenRetreivalDataStore, FaissMIPSIndex
+from synerfuse.legacy.model.biencoder_model import get_model_provider
+from synerfuse.training import get_model
 from tasks.orqa.unsupervised.nq import get_nq_dataset
 from tasks.orqa.unsupervised.nq import get_one_epoch_nq_dataloader
 from tasks.orqa.unsupervised.nq import process_nq_batch

@@ -10,20 +10,20 @@ import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                              os.path.pardir, os.path.pardir)))
-from megatron.training import get_args
-from megatron.training import get_timers
-from megatron.training import get_tokenizer
-from megatron.training import print_rank_0
-from megatron.core import mpu
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.blended_megatron_dataset_config import GPTDatasetConfig
-from megatron.core.datasets.gpt_dataset import GPTDataset
-from megatron.core.datasets.utils import get_blend_from_list
-from megatron.legacy.model import GPTModel
-from megatron.core.enums import ModelType
-from megatron.training import pretrain
-from megatron.training.utils import get_ltor_masks_and_position_ids
-from megatron.training.utils import average_losses_across_data_parallel_group
+from synerfuse.training import get_args
+from synerfuse.training import get_timers
+from synerfuse.training import get_tokenizer
+from synerfuse.training import print_rank_0
+from synerfuse.core import mpu
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.blended_megatron_dataset_config import GPTDatasetConfig
+from synerfuse.core.datasets.gpt_dataset import GPTDataset
+from synerfuse.core.datasets.utils import get_blend_from_list
+from synerfuse.legacy.model import GPTModel
+from synerfuse.core.enums import ModelType
+from synerfuse.training import pretrain
+from synerfuse.training.utils import get_ltor_masks_and_position_ids
+from synerfuse.training.utils import average_losses_across_data_parallel_group
 
 def model_provider(pre_process=True, post_process=True):
     """Build the model."""

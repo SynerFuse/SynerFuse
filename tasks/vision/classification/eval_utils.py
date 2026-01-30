@@ -7,10 +7,10 @@ from functools import partial
 
 import torch
 
-from megatron.training import get_args
-from megatron.training import print_rank_0, print_rank_last
-from megatron.core import mpu
-from megatron.schedules import get_forward_backward_func
+from synerfuse.training import get_args
+from synerfuse.training import print_rank_0, print_rank_last
+from synerfuse.core import mpu
+from synerfuse.schedules import get_forward_backward_func
 from tasks.vision.finetune_utils import build_data_loader
 from tasks.vision.finetune_utils import process_batch
 from torchvision import datasets, transforms

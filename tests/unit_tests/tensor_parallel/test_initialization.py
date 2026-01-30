@@ -4,11 +4,11 @@ import pytest
 
 import torch
 
-from megatron.core.tensor_parallel.layers import VocabParallelEmbedding, RowParallelLinear, ColumnParallelLinear
+from synerfuse.core.tensor_parallel.layers import VocabParallelEmbedding, RowParallelLinear, ColumnParallelLinear
 from tests.unit_tests.test_utilities import Utils
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec
 
 class Test:        
 

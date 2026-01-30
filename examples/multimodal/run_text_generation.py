@@ -19,11 +19,11 @@ from PIL import Image
 from torchvision.transforms import Compose, Resize, ToPILImage
 from train import add_multimodal_extra_args, get_image_token_count, model_provider
 
-from megatron.inference.text_generation.api import generate_and_post_process
-from megatron.inference.text_generation.forward_step import ForwardStep
-from megatron.training import get_args, get_model, print_rank_0
-from megatron.training.checkpointing import load_checkpoint
-from megatron.training.initialize import initialize_megatron
+from synerfuse.inference.text_generation.api import generate_and_post_process
+from synerfuse.inference.text_generation.forward_step import ForwardStep
+from synerfuse.training import get_args, get_model, print_rank_0
+from synerfuse.training.checkpointing import load_checkpoint
+from synerfuse.training.initialize import initialize_megatron
 
 def add_text_generation_args(parser):
     """Text generation arguments."""

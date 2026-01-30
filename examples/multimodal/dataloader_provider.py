@@ -2,8 +2,8 @@
 import torch
 from dataset_helpers import TaskEncoder, print_error_handler
 
-from megatron.core import mpu
-from megatron.energon import (
+from synerfuse.core import mpu
+from synerfuse.energon import (
     LimitDataset,
     RepeatDataset,
     WorkerConfig,
@@ -12,8 +12,8 @@ from megatron.energon import (
     get_train_dataset,
     get_val_datasets,
 )
-from megatron.training import get_args, get_num_microbatches, print_rank_0
-from megatron.training.checkpointing import get_checkpoint_name
+from synerfuse.training import get_args, get_num_microbatches, print_rank_0
+from synerfuse.training.checkpointing import get_checkpoint_name
 
 
 def datasets_provider(worker_config=None):

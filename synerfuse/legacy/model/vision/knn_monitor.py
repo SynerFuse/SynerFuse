@@ -1,9 +1,9 @@
 import torch.nn.functional as F
 import torch
-from megatron.training import print_rank_0, get_args
-from megatron.core import mpu
-from megatron.legacy.data.vit_dataset import ClassificationTransform
-from megatron.legacy.data.image_folder import ImageFolder
+from synerfuse.training import print_rank_0, get_args
+from synerfuse.core import mpu
+from synerfuse.legacy.data.vit_dataset import ClassificationTransform
+from synerfuse.legacy.data.image_folder import ImageFolder
 
 _FEATURE_BANK = None
 
