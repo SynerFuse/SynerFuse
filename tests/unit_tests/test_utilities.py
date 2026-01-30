@@ -1,6 +1,6 @@
 import os
 import torch
-import megatron.core.parallel_state as ps
+import synerfuse.core.parallel_state as ps
 
 
 class TestModel(torch.nn.Module):

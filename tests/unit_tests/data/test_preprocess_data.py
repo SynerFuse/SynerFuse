@@ -8,8 +8,8 @@ import tempfile
 import nltk
 import requests
 
-from megatron.core.datasets.indexed_dataset import IndexedDataset
-from megatron.training.tokenizer.gpt2_tokenization import (
+from synerfuse.core.datasets.indexed_dataset import IndexedDataset
+from synerfuse.training.tokenizer.gpt2_tokenization import (
     PRETRAINED_MERGES_ARCHIVE_MAP,
     PRETRAINED_VOCAB_ARCHIVE_MAP,
 )

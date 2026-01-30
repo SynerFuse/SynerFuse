@@ -4,12 +4,12 @@ from typing import Optional, Union
 
 import torch
 
-from megatron.core.models.common.vision_module.vision_module import VisionModule
-from megatron.core.transformer.custom_layers.transformer_engine import TENorm
-from megatron.core.transformer.enums import ModelType
-from megatron.core.transformer.spec_utils import ModuleSpec, build_module
-from megatron.core.transformer.transformer_block import TransformerBlock
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.common.vision_module.vision_module import VisionModule
+from synerfuse.core.transformer.custom_layers.transformer_engine import TENorm
+from synerfuse.core.transformer.enums import ModelType
+from synerfuse.core.transformer.spec_utils import ModuleSpec, build_module
+from synerfuse.core.transformer.transformer_block import TransformerBlock
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 
 
 # Note: This is under development and is missing features like position embedding interpolation.

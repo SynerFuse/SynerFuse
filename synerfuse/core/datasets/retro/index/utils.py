@@ -6,8 +6,8 @@ import glob
 import os
 from typing import List, Tuple
 
-from megatron.core.datasets.retro.config import RetroPreprocessingConfig
-from megatron.core.datasets.retro.utils import retro_makedir
+from synerfuse.core.datasets.retro.config import RetroPreprocessingConfig
+from synerfuse.core.datasets.retro.utils import retro_makedir
 
 
 def get_index_dir(config: RetroPreprocessingConfig) -> str:

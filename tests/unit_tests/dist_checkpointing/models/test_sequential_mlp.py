@@ -5,21 +5,21 @@ from pkg_resources import packaging
 from importlib.metadata import version
 import torch
 
-from megatron.core import parallel_state
-from megatron.core.dist_checkpointing import save, load, load_plain_tensors
-from megatron.core.dist_checkpointing.dict_utils import diff
-from megatron.core.dist_checkpointing.serialization import (
+from synerfuse.core import parallel_state
+from synerfuse.core.dist_checkpointing import save, load, load_plain_tensors
+from synerfuse.core.dist_checkpointing.dict_utils import diff
+from synerfuse.core.dist_checkpointing.serialization import (
     get_default_save_sharded_strategy,
     get_default_load_sharded_strategy,
 )
-from megatron.core.dist_checkpointing.strategies.fully_parallel import (
+from synerfuse.core.dist_checkpointing.strategies.fully_parallel import (
     FullyParallelSaveStrategyWrapper,
     FullyParallelLoadStrategyWrapper,
 )
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.transformer.moe.experts import SequentialMLP, TEGroupedMLP
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.transformer.moe.experts import SequentialMLP, TEGroupedMLP
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 from tests.unit_tests.dist_checkpointing import TempNamedDir
 from tests.unit_tests.test_utilities import Utils
 

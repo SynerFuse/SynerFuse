@@ -22,7 +22,7 @@ except ImportError:
         ## see https://github.com/NVIDIA/apex/blob/7b73b12361068a10b0f44844534613f252a5ea75/apex/optimizers/fused_adam.py#L16
         from torch.optim import AdamW as Adam, SGD
 
-from megatron.core import mpu
+from synerfuse.core import mpu
 
 from ..distributed import ParamAndGradBuffer
 from ..transformer.module import MegatronModule

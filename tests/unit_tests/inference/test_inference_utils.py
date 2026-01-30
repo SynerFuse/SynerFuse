@@ -1,4 +1,4 @@
-from megatron.core.inference.utils import Counter
+from synerfuse.core.inference.utils import Counter
 
 class TestInferenceUtils:
 

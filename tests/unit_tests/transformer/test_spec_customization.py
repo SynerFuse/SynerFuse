@@ -9,23 +9,23 @@ import torch
 import transformer_engine as te
 from pkg_resources import packaging
 
-from megatron.core.fusions.fused_bias_dropout import get_bias_dropout_add
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.transformer.attention import SelfAttention, SelfAttentionSubmodules
-from megatron.core.transformer.custom_layers.transformer_engine import (
+from synerfuse.core.fusions.fused_bias_dropout import get_bias_dropout_add
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.transformer.attention import SelfAttention, SelfAttentionSubmodules
+from synerfuse.core.transformer.custom_layers.transformer_engine import (
     TEDotProductAttention,
     TELayerNormColumnParallelLinear,
     TENorm,
     TERowParallelLinear,
 )
-from megatron.core.transformer.dot_product_attention import DotProductAttention
-from megatron.core.transformer.enums import AttnMaskType
-from megatron.core.transformer.identity_op import IdentityFuncOp, IdentityOp
-from megatron.core.transformer.spec_utils import ModuleSpec, build_module, import_module
-from megatron.core.transformer.transformer_block import TransformerBlock, TransformerBlockSubmodules
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.transformer.transformer_layer import TransformerLayer, TransformerLayerSubmodules
+from synerfuse.core.transformer.dot_product_attention import DotProductAttention
+from synerfuse.core.transformer.enums import AttnMaskType
+from synerfuse.core.transformer.identity_op import IdentityFuncOp, IdentityOp
+from synerfuse.core.transformer.spec_utils import ModuleSpec, build_module, import_module
+from synerfuse.core.transformer.transformer_block import TransformerBlock, TransformerBlockSubmodules
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.transformer_layer import TransformerLayer, TransformerLayerSubmodules
 from tests.unit_tests.test_utilities import Utils
 
 

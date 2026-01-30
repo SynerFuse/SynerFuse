@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import SGD, Adam
 
-from megatron.core.optimizer import ChainedOptimizer
+from synerfuse.core.optimizer import ChainedOptimizer
 
 
 class Net(nn.Module):

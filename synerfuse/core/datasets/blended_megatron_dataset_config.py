@@ -6,8 +6,8 @@ import re
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
-from megatron.core.datasets.megatron_tokenizer import MegatronTokenizer
-from megatron.core.datasets.utils import Split, log_single_rank, normalize
+from synerfuse.core.datasets.megatron_tokenizer import MegatronTokenizer
+from synerfuse.core.datasets.utils import Split, log_single_rank, normalize
 
 logger = logging.getLogger(__name__)
 

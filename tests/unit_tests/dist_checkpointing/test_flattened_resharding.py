@@ -7,17 +7,17 @@ import pytest
 import torch
 from torch.distributed.checkpoint import CheckpointException
 
-from megatron.core import parallel_state
-from megatron.core.dist_checkpointing import ShardedTensor, save, load
-from megatron.core.dist_checkpointing.core import CheckpointingException, \
+from synerfuse.core import parallel_state
+from synerfuse.core.dist_checkpointing import ShardedTensor, save, load
+from synerfuse.core.dist_checkpointing.core import CheckpointingException, \
     maybe_load_config
-from megatron.core.dist_checkpointing.dict_utils import diff
-from megatron.core.dist_checkpointing.mapping import ShardedTensorFactory, \
+from synerfuse.core.dist_checkpointing.dict_utils import diff
+from synerfuse.core.dist_checkpointing.mapping import ShardedTensorFactory, \
     ShardedObject
-from megatron.core.dist_checkpointing.serialization import load_tensors_metadata
-from megatron.core.dist_checkpointing.strategies.resharding import \
+from synerfuse.core.dist_checkpointing.serialization import load_tensors_metadata
+from synerfuse.core.dist_checkpointing.strategies.resharding import \
     apply_nd_flattened_tensors_reformulation, restore_nd_flattened_tensors_formulation
-from megatron.core.dist_checkpointing.strategies.torch import \
+from synerfuse.core.dist_checkpointing.strategies.torch import \
     get_reformulation_metadata
 
 from tests.unit_tests.dist_checkpointing import TempNamedDir

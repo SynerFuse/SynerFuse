@@ -8,29 +8,29 @@ import torch
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
-from megatron.core import parallel_state
-from megatron.core.dist_checkpointing import ShardedTensor
-from megatron.core.dist_checkpointing.mapping import (
+from synerfuse.core import parallel_state
+from synerfuse.core.dist_checkpointing import ShardedTensor
+from synerfuse.core.dist_checkpointing.mapping import (
     ReplicaId,
     ShardedStateDict,
     ShardedTensorFactory,
 )
-from megatron.core.dist_checkpointing.utils import replace_prefix_for_sharding
-from megatron.core.fusions.fused_bias_geglu import bias_geglu_impl
-from megatron.core.fusions.fused_bias_gelu import bias_gelu_impl
-from megatron.core.fusions.fused_bias_swiglu import bias_swiglu_impl
-from megatron.core.jit import jit_fuser
-from megatron.core.tensor_parallel.layers import (
+from synerfuse.core.dist_checkpointing.utils import replace_prefix_for_sharding
+from synerfuse.core.fusions.fused_bias_geglu import bias_geglu_impl
+from synerfuse.core.fusions.fused_bias_gelu import bias_gelu_impl
+from synerfuse.core.fusions.fused_bias_swiglu import bias_swiglu_impl
+from synerfuse.core.jit import jit_fuser
+from synerfuse.core.tensor_parallel.layers import (
     _initialize_affine_weight_cpu,
     _initialize_affine_weight_gpu,
 )
-from megatron.core.tensor_parallel.utils import divide
-from megatron.core.transformer.mlp import MLP, MLPSubmodules, apply_swiglu_sharded_factory
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.moe import grouped_gemm_util as gg
-from megatron.core.transformer.spec_utils import build_module
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.transformer.utils import make_sharded_object_for_checkpoint
+from synerfuse.core.tensor_parallel.utils import divide
+from synerfuse.core.transformer.mlp import MLP, MLPSubmodules, apply_swiglu_sharded_factory
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.moe import grouped_gemm_util as gg
+from synerfuse.core.transformer.spec_utils import build_module
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.utils import make_sharded_object_for_checkpoint
 
 
 class GroupedMLP(MegatronModule):

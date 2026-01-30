@@ -3,11 +3,11 @@ import math
 import torch
 from torch.nn import LayerNorm
 
-from megatron.legacy.model.enums import AttnMaskType
-from megatron.legacy.model.fused_layer_norm import MixedFusedLayerNorm
-from megatron.legacy.model.fused_softmax import FusedScaleMaskSoftmax
-from megatron.legacy.model.utils import attention_mask_func
-from megatron.legacy.fused_kernels import load
+from synerfuse.legacy.model.enums import AttnMaskType
+from synerfuse.legacy.model.fused_layer_norm import MixedFusedLayerNorm
+from synerfuse.legacy.model.fused_softmax import FusedScaleMaskSoftmax
+from synerfuse.legacy.model.utils import attention_mask_func
+from synerfuse.legacy.fused_kernels import load
 
 def test_load_fused_kernels():
     try:

@@ -6,13 +6,13 @@ from typing import List
 
 import torch
 
-from megatron.core import InferenceParams, parallel_state
-from megatron.core.models.gpt import GPTModel
-from megatron.core.models.vision.clip_vit_model import CLIPViTModel
-from megatron.core.models.vision.multimodal_projector import MultimodalProjector
-from megatron.core.transformer import MegatronModule
-from megatron.core.transformer.spec_utils import ModuleSpec
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core import InferenceParams, parallel_state
+from synerfuse.core.models.gpt import GPTModel
+from synerfuse.core.models.vision.clip_vit_model import CLIPViTModel
+from synerfuse.core.models.vision.multimodal_projector import MultimodalProjector
+from synerfuse.core.transformer import MegatronModule
+from synerfuse.core.transformer.spec_utils import ModuleSpec
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 
 
 # Note: This is under development and may be missing features.

@@ -8,9 +8,9 @@ import math
 import numpy as np
 import torch
 
-from megatron.training import get_args
-from megatron.training import print_rank_0
-from megatron.training import get_tokenizer
+from synerfuse.training import get_args
+from synerfuse.training import print_rank_0
+from synerfuse.training import get_tokenizer
 from .detokenizer import get_detokenizer
 
 

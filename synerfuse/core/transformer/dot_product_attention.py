@@ -6,14 +6,14 @@ import math
 import torch
 from torch import Tensor
 
-from megatron.core import parallel_state, tensor_parallel
-from megatron.core.fusions.fused_softmax import FusedScaleMaskSoftmax
-from megatron.core.packed_seq_params import PackedSeqParams
-from megatron.core.transformer.enums import AttnMaskType
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.transformer.utils import attention_mask_func
-from megatron.core.utils import divide
+from synerfuse.core import parallel_state, tensor_parallel
+from synerfuse.core.fusions.fused_softmax import FusedScaleMaskSoftmax
+from synerfuse.core.packed_seq_params import PackedSeqParams
+from synerfuse.core.transformer.enums import AttnMaskType
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.utils import attention_mask_func
+from synerfuse.core.utils import divide
 
 
 class DotProductAttention(MegatronModule):

@@ -2,8 +2,8 @@
 
 """Model evaluation"""
 
-from megatron.training import get_args
-from megatron.training import print_rank_0
+from synerfuse.training import get_args
+from synerfuse.training import print_rank_0
 from tasks.msdp.metrics import F1Metric
 from tqdm import tqdm
 

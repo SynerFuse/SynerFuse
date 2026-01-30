@@ -5,9 +5,9 @@ from typing import Dict, Optional
 
 from torch import Tensor
 
-from megatron.core import InferenceParams
-from megatron.core.dist_checkpointing.mapping import ShardedStateDict
-from megatron.core.models.gpt import GPTModel
+from synerfuse.core import InferenceParams
+from synerfuse.core.dist_checkpointing.mapping import ShardedStateDict
+from synerfuse.core.models.gpt import GPTModel
 
 
 class RetroModel(GPTModel):

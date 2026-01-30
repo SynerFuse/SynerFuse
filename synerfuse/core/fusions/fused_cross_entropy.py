@@ -4,14 +4,14 @@ from typing import Tuple
 
 import torch
 
-from megatron.core.jit import jit_fuser
-from megatron.core.parallel_state import (
+from synerfuse.core.jit import jit_fuser
+from synerfuse.core.parallel_state import (
     get_tensor_model_parallel_group,
     get_tensor_model_parallel_rank,
     get_tensor_model_parallel_world_size,
 )
-from megatron.core.tensor_parallel.cross_entropy import VocabParallelCrossEntropy
-from megatron.core.tensor_parallel.utils import VocabUtility
+from synerfuse.core.tensor_parallel.cross_entropy import VocabParallelCrossEntropy
+from synerfuse.core.tensor_parallel.utils import VocabUtility
 
 
 @jit_fuser

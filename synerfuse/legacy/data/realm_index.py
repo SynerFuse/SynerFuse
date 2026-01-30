@@ -6,8 +6,8 @@ import shutil
 import numpy as np
 import torch
 
-from megatron.training import get_args
-from megatron.core import mpu
+from synerfuse.training import get_args
+from synerfuse.core import mpu
 
 
 def detach(tensor):

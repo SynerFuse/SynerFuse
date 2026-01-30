@@ -7,14 +7,14 @@ import pytest
 
 import torch
 
-from megatron.core import parallel_state
-from megatron.core.dist_checkpointing import ShardedTensor
-from megatron.core.dist_checkpointing.dict_utils import nested_values, \
+from synerfuse.core import parallel_state
+from synerfuse.core.dist_checkpointing import ShardedTensor
+from synerfuse.core.dist_checkpointing.dict_utils import nested_values, \
     map_reduce, dict_list_map_outplace
-from megatron.core.dist_checkpointing.mapping import is_main_replica
-from megatron.core.dist_checkpointing.strategies.base import \
+from synerfuse.core.dist_checkpointing.mapping import is_main_replica
+from synerfuse.core.dist_checkpointing.strategies.base import \
     SaveShardedStrategy, LoadShardedStrategy
-from megatron.core.dist_checkpointing.strategies.fully_parallel import \
+from synerfuse.core.dist_checkpointing.strategies.fully_parallel import \
     FullyParallelSaveStrategyWrapper, _sharded_tensor_shard_id, \
     FullyParallelLoadStrategyWrapper, _ShardId
 from tests.unit_tests.test_utilities import Utils

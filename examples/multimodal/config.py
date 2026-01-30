@@ -1,7 +1,7 @@
 # Copyright (c) 2024, NVIDIA CORPORATION.  All rights reserved.
 import torch
 
-from megatron.training.activations import quick_gelu, squared_relu
+from synerfuse.training.activations import quick_gelu, squared_relu
 
 
 def get_language_model_config(config):

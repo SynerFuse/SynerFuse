@@ -18,11 +18,11 @@ from typing import Any, Dict, Optional, Tuple
 import numpy as np
 import torch
 
-from megatron.core.datasets.retro.db.dataset import DBDataset
-from megatron.core.datasets.retro.db.utils import get_merged_train_dataset as get_db_dataset
-from megatron.core.datasets.retro.external_libs import h5py
-from megatron.core.datasets.retro.utils import BlockPathMap, log_retro_rank_0
-from megatron.core.models.retro import RetroConfig
+from synerfuse.core.datasets.retro.db.dataset import DBDataset
+from synerfuse.core.datasets.retro.db.utils import get_merged_train_dataset as get_db_dataset
+from synerfuse.core.datasets.retro.external_libs import h5py
+from synerfuse.core.datasets.retro.utils import BlockPathMap, log_retro_rank_0
+from synerfuse.core.models.retro import RetroConfig
 
 from .gpt_chunk_dataset import GPTChunkDataset, build_gpt_chunk_datasets_from_gpt_datasets
 from .utils import get_query_dir

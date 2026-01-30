@@ -1,7 +1,7 @@
 import torch
 from tests.unit_tests.test_utilities import Utils
-from megatron.core import ModelParallelConfig
-import megatron.core.pipeline_parallel.schedules as schedule
+from synerfuse.core import ModelParallelConfig
+import synerfuse.core.pipeline_parallel.schedules as schedule
 from pytest_mock import mocker 
 import pytest
 
@@ -27,7 +27,7 @@ def test_deallocate_output_tensor():
     assert(out.nelement() == 6) 
 
 def test_forward_backward_func_without_pipeline_parallel(mocker):
-    from megatron.core.pipeline_parallel import get_forward_backward_func
+    from synerfuse.core.pipeline_parallel import get_forward_backward_func
 
     Utils.initialize_model_parallel(tensor_model_parallel_size=2, pipeline_model_parallel_size=1)
 
@@ -73,7 +73,7 @@ def test_forward_backward_func_without_pipeline_parallel(mocker):
 
 
 def test_forward_backward_func_with_pipeline_parallel(mocker):
-    from megatron.core.pipeline_parallel import get_forward_backward_func
+    from synerfuse.core.pipeline_parallel import get_forward_backward_func
 
     Utils.initialize_model_parallel(tensor_model_parallel_size=1, pipeline_model_parallel_size=4)
 
@@ -122,8 +122,8 @@ def test_forward_backward_func_with_pipeline_parallel(mocker):
 
 
 def test_forward_backward_func_with_interleaving(mocker):
-    from megatron.core.pipeline_parallel import get_forward_backward_func
-    from megatron.core.enums import ModelType
+    from synerfuse.core.pipeline_parallel import get_forward_backward_func
+    from synerfuse.core.enums import ModelType
 
     Utils.initialize_model_parallel(tensor_model_parallel_size=1, pipeline_model_parallel_size=4, virtual_pipeline_model_parallel_size=2)
 

@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import torch
 
-import megatron.core.utils as util
+import synerfuse.core.utils as util
 from tests.unit_tests.test_utilities import Utils
 
 

@@ -9,9 +9,9 @@ from typing import Any, Dict, Iterable, List, Optional, Union
 import numpy
 import torch
 
-from megatron.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
-from megatron.core.datasets.indexed_dataset import IndexedDataset
-from megatron.core.datasets.utils import Split
+from synerfuse.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
+from synerfuse.core.datasets.indexed_dataset import IndexedDataset
+from synerfuse.core.datasets.utils import Split
 
 LowLevelDataset = Union[IndexedDataset, Iterable]
 

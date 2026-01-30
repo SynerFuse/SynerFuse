@@ -1,13 +1,13 @@
 from argparse import Namespace
-from megatron.core import parallel_state
-from megatron.core.inference.model_inference_wrappers.inference_wrapper_config import InferenceWrapperConfig
+from synerfuse.core import parallel_state
+from synerfuse.core.inference.model_inference_wrappers.inference_wrapper_config import InferenceWrapperConfig
 import torch
-from megatron.core.inference.model_inference_wrappers.gpt.gpt_inference_wrapper import GPTInferenceWrapper
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec, get_gpt_layer_with_transformer_engine_spec
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.models.gpt.gpt_model import GPTModel
+from synerfuse.core.inference.model_inference_wrappers.gpt.gpt_inference_wrapper import GPTInferenceWrapper
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec, get_gpt_layer_with_transformer_engine_spec
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.gpt.gpt_model import GPTModel
 from tests.unit_tests.test_utilities import Utils
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
 
 class TestGPTInferenceWrapper:
 

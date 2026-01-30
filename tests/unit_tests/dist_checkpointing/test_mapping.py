@@ -4,11 +4,11 @@ import pytest
 
 import torch
 
-from megatron.core.dist_checkpointing import ShardedTensor
-from megatron.core.dist_checkpointing.core import CheckpointingException
-from megatron.core.dist_checkpointing.mapping import is_main_replica, \
+from synerfuse.core.dist_checkpointing import ShardedTensor
+from synerfuse.core.dist_checkpointing.core import CheckpointingException
+from synerfuse.core.dist_checkpointing.mapping import is_main_replica, \
     ShardedTensorFactory, ShardedObject, apply_factories, apply_factory_merges
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 from tests.unit_tests.test_utilities import Utils
 
 class TestShardedTensor:

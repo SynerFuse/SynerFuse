@@ -4,11 +4,11 @@ from unittest import mock
 import pytest
 import torch
 
-from megatron.core.dist_checkpointing import ShardedTensor, load, save
-from megatron.core.dist_checkpointing.dict_utils import diff
-from megatron.core.dist_checkpointing.strategies.async_utils import AsyncCallsQueue
-from megatron.core.dist_checkpointing.strategies.filesystem_async import FileSystemWriterAsync
-from megatron.core.dist_checkpointing.strategies.torch import TorchDistSaveShardedStrategy
+from synerfuse.core.dist_checkpointing import ShardedTensor, load, save
+from synerfuse.core.dist_checkpointing.dict_utils import diff
+from synerfuse.core.dist_checkpointing.strategies.async_utils import AsyncCallsQueue
+from synerfuse.core.dist_checkpointing.strategies.filesystem_async import FileSystemWriterAsync
+from synerfuse.core.dist_checkpointing.strategies.torch import TorchDistSaveShardedStrategy
 from tests.unit_tests.dist_checkpointing import TempNamedDir
 from tests.unit_tests.test_utilities import Utils
 

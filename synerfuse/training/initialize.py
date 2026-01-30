@@ -10,17 +10,17 @@ import numpy as np
 import torch
 from datetime import timedelta
 
-from megatron.legacy import fused_kernels
-from megatron.training import get_adlr_autoresume
-from megatron.training import get_args
-from megatron.training import get_tensorboard_writer
-from megatron.core import mpu, tensor_parallel
-from megatron.training.arguments import parse_args, validate_args
-from megatron.training.yaml_arguments import validate_yaml
-from megatron.training.checkpointing import load_args_from_checkpoint
-from megatron.training.global_vars import set_global_variables
-from megatron.legacy.model.transformer import bias_dropout_add_fused_train
-from megatron.legacy.model.fused_bias_gelu import bias_gelu
+from synerfuse.legacy import fused_kernels
+from synerfuse.training import get_adlr_autoresume
+from synerfuse.training import get_args
+from synerfuse.training import get_tensorboard_writer
+from synerfuse.core import mpu, tensor_parallel
+from synerfuse.training.arguments import parse_args, validate_args
+from synerfuse.training.yaml_arguments import validate_yaml
+from synerfuse.training.checkpointing import load_args_from_checkpoint
+from synerfuse.training.global_vars import set_global_variables
+from synerfuse.legacy.model.transformer import bias_dropout_add_fused_train
+from synerfuse.legacy.model.fused_bias_gelu import bias_gelu
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ def _compile_dependencies():
     if torch.distributed.get_rank() == 0:
         start_time = time.time()
         print("> compiling dataset index builder ...")
-        from megatron.core.datasets.utils import compile_helpers
+        from synerfuse.core.datasets.utils import compile_helpers
 
         compile_helpers()
         print(

@@ -7,11 +7,11 @@ import numpy as np
 import torchvision.transforms as T
 from torchvision import datasets
 from torch.utils.data import Dataset
-from megatron.legacy.data.autoaugment import ImageNetPolicy
+from synerfuse.legacy.data.autoaugment import ImageNetPolicy
 from tasks.vision.segmentation.cityscapes import Cityscapes
 import tasks.vision.segmentation.transforms as ET
-from megatron.legacy.data.autoaugment import ImageNetPolicy
-from megatron.training import get_args
+from synerfuse.legacy.data.autoaugment import ImageNetPolicy
+from synerfuse.training import get_args
 from PIL import Image, ImageOps
 
 

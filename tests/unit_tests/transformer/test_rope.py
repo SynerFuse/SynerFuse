@@ -3,8 +3,8 @@
 import pytest
 import torch
 
-from megatron.core.models.common.embeddings.rotary_pos_embedding import RotaryEmbedding
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.models.common.embeddings.rotary_pos_embedding import RotaryEmbedding
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
 from tests.unit_tests.test_utilities import Utils
 
 

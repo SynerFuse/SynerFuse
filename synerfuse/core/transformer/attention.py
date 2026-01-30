@@ -7,9 +7,9 @@ from typing import Union
 import torch
 from pkg_resources import packaging
 
-from megatron.core import parallel_state, tensor_parallel
-from megatron.core.models.common.embeddings.rotary_pos_embedding import apply_rotary_pos_emb
-from megatron.core.parallel_state import (
+from synerfuse.core import parallel_state, tensor_parallel
+from synerfuse.core.models.common.embeddings.rotary_pos_embedding import apply_rotary_pos_emb
+from synerfuse.core.parallel_state import (
     get_data_parallel_group,
     get_data_parallel_rank,
     get_data_parallel_world_size,
@@ -17,12 +17,12 @@ from megatron.core.parallel_state import (
     get_tensor_model_parallel_rank,
     get_tensor_model_parallel_world_size,
 )
-from megatron.core.transformer.enums import AttnMaskType
-from megatron.core.transformer.identity_op import IdentityFuncOp, IdentityOp
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.spec_utils import ModuleSpec, build_module
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.utils import divide
+from synerfuse.core.transformer.enums import AttnMaskType
+from synerfuse.core.transformer.identity_op import IdentityFuncOp, IdentityOp
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.spec_utils import ModuleSpec, build_module
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.utils import divide
 
 from .enums import AttnMaskType
 from .transformer_config import TransformerConfig
@@ -35,7 +35,7 @@ except ImportError:
     HAVE_TE = False
 
 if HAVE_TE:
-    from megatron.core.transformer.custom_layers.transformer_engine import SplitAlongDim
+    from synerfuse.core.transformer.custom_layers.transformer_engine import SplitAlongDim
 else:
     SplitAlongDim = None
 

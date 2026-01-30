@@ -6,14 +6,14 @@ import torch.nn as nn
 import numpy as np
 import torch.distributed as dist
 from functools import partial
-from megatron.training import get_args, get_timers, print_rank_0
-from megatron.core.enums import ModelType
-from megatron.legacy.data.vit_dataset import build_train_valid_datasets
-from megatron.legacy.model.vision.dino import DINOPretrainModel
-from megatron.legacy.model.vision.knn_monitor import knn_predict, get_feature_bank
-from megatron.training import pretrain
-from megatron.training.utils import average_losses_across_data_parallel_group, unwrap_model
-from megatron.training.arguments import core_transformer_config_from_args
+from synerfuse.training import get_args, get_timers, print_rank_0
+from synerfuse.core.enums import ModelType
+from synerfuse.legacy.data.vit_dataset import build_train_valid_datasets
+from synerfuse.legacy.model.vision.dino import DINOPretrainModel
+from synerfuse.legacy.model.vision.knn_monitor import knn_predict, get_feature_bank
+from synerfuse.training import pretrain
+from synerfuse.training.utils import average_losses_across_data_parallel_group, unwrap_model
+from synerfuse.training.arguments import core_transformer_config_from_args
 
 def model_provider(pre_process=True, post_process=True):
     """Build the model."""

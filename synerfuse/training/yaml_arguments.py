@@ -16,7 +16,7 @@ from types import SimpleNamespace
 
 import torch.nn.functional as F
 
-from megatron.core.transformer import TransformerConfig
+from synerfuse.core.transformer import TransformerConfig
 
 # Taken from https://stackoverflow.com/questions/65414773/parse-environment-variable-from-yaml-with-pyyaml
 # Allows for yaml to use environment variables

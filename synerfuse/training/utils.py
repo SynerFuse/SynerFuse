@@ -25,20 +25,20 @@ except ImportError:
             'multi_tensor_applier and multi_tensor_l2norm'
         )
 
-        from megatron.core.utils import (
+        from synerfuse.core.utils import (
             local_multi_tensor_l2_norm as multi_tensor_l2norm,
             local_multi_tensor_applier as multi_tensor_applier,
         )
 
-from megatron.training import (
+from synerfuse.training import (
     get_args,
     get_adlr_autoresume,
 )
-from megatron.core import DistributedDataParallel as DDP
-from megatron.core import mpu
-from megatron.core.tensor_parallel import param_is_not_tensor_parallel_duplicate
-from megatron.legacy.model import Float16Module
-from megatron.legacy.model.module import param_is_not_shared
+from synerfuse.core import DistributedDataParallel as DDP
+from synerfuse.core import mpu
+from synerfuse.core.tensor_parallel import param_is_not_tensor_parallel_duplicate
+from synerfuse.legacy.model import Float16Module
+from synerfuse.legacy.model.module import param_is_not_shared
 
 
 ALL_MODULE_WRAPPER_CLASSNAMES = (DDP, Float16Module)
@@ -161,7 +161,7 @@ def print_params_min_max_norm(optimizer, iteration):
 def check_adlr_autoresume_termination(iteration, model,
                                       optimizer, opt_param_scheduler):
     """Check for autoresume signal and exit if it is received."""
-    from megatron.training.checkpointing import save_checkpoint
+    from synerfuse.training.checkpointing import save_checkpoint
 
     args = get_args()
     autoresume = get_adlr_autoresume()

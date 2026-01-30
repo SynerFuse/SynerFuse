@@ -1,4 +1,4 @@
-from megatron.core.inference.common_inference_params import CommonInferenceParams
+from synerfuse.core.inference.common_inference_params import CommonInferenceParams
 
 class TestCommonInferenceParams:
 

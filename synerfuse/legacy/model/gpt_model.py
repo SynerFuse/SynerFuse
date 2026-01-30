@@ -4,8 +4,8 @@
 
 import torch
 
-from megatron.training import get_args
-from megatron.core import tensor_parallel
+from synerfuse.training import get_args
+from synerfuse.core import tensor_parallel
 from .module import MegatronModule
 
 from .enums import AttnMaskType

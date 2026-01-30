@@ -11,10 +11,10 @@ from typing import Union
 import torch
 from torch import Tensor
 
-from megatron.core.transformer.identity_op import IdentityOp
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.spec_utils import ModuleSpec, build_module
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.identity_op import IdentityOp
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.spec_utils import ModuleSpec, build_module
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 
 
 @dataclass

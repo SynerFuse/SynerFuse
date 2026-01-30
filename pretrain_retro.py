@@ -5,21 +5,21 @@
 from functools import partial
 import torch
 
-from megatron.training import get_args
-from megatron.training import get_timers
-from megatron.training import get_tokenizer
-from megatron.training import print_rank_0
-from megatron.training.arguments import core_transformer_config_from_args
-from megatron.core import tensor_parallel
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.utils import get_blend_from_list
-from megatron.core.datasets.retro.query.retro_dataset import get_retro_datasets
-from megatron.core.datasets.retro.query.multi_split_gpt_dataset import MultiSplitGPTDataset, MultiSplitGPTDatasetConfig
-from megatron.core.enums import ModelType
-from megatron.core.models.retro import get_retro_decoder_block_spec, RetroConfig, RetroModel
-from megatron.core.models.retro.utils import get_all_true_mask
-from megatron.training import pretrain
-from megatron.training.utils import get_ltor_masks_and_position_ids
+from synerfuse.training import get_args
+from synerfuse.training import get_timers
+from synerfuse.training import get_tokenizer
+from synerfuse.training import print_rank_0
+from synerfuse.training.arguments import core_transformer_config_from_args
+from synerfuse.core import tensor_parallel
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.utils import get_blend_from_list
+from synerfuse.core.datasets.retro.query.retro_dataset import get_retro_datasets
+from synerfuse.core.datasets.retro.query.multi_split_gpt_dataset import MultiSplitGPTDataset, MultiSplitGPTDatasetConfig
+from synerfuse.core.enums import ModelType
+from synerfuse.core.models.retro import get_retro_decoder_block_spec, RetroConfig, RetroModel
+from synerfuse.core.models.retro.utils import get_all_true_mask
+from synerfuse.training import pretrain
+from synerfuse.training.utils import get_ltor_masks_and_position_ids
 from pretrain_gpt import (
     is_dataset_built_on_rank,
     loss_func,

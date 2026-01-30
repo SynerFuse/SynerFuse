@@ -1,4 +1,4 @@
-from megatron.core.tensor_parallel import mappings
+from synerfuse.core.tensor_parallel import mappings
 from tests.unit_tests.test_utilities import Utils
 import torch
 

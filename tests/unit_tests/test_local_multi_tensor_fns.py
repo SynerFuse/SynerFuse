@@ -1,5 +1,5 @@
 import copy
-from megatron.core.utils import (
+from synerfuse.core.utils import (
     local_multi_tensor_applier,
     local_multi_tensor_l2_norm,
     local_multi_tensor_scale

@@ -2,11 +2,11 @@
 
 import pytest
 import torch
-from megatron.core.transformer.moe.moe_utils import clear_aux_losses_tracker
+from synerfuse.core.transformer.moe.moe_utils import clear_aux_losses_tracker
 
 from tests.unit_tests.test_utilities import Utils
 from tests.unit_tests.transformer.moe.test_token_dispatcher import MoEModelTestContainer
-from megatron.core import parallel_state
+from synerfuse.core import parallel_state
 
 class AuxlossTestContainer(MoEModelTestContainer):
     def partition_input(self, input):

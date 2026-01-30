@@ -1,19 +1,19 @@
 # Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
 
-from megatron.core.fusions.fused_bias_dropout import get_bias_dropout_add
-from megatron.core.ssm.mamba_block import MambaStack, MambaStackSubmodules
-from megatron.core.ssm.mamba_layer import MambaLayer, MambaLayerSubmodules
-from megatron.core.ssm.mamba_mixer import MambaMixer, MambaMixerSubmodules
-from megatron.core.transformer.attention import SelfAttention, SelfAttentionSubmodules
-from megatron.core.transformer.custom_layers.transformer_engine import (
+from synerfuse.core.fusions.fused_bias_dropout import get_bias_dropout_add
+from synerfuse.core.ssm.mamba_block import MambaStack, MambaStackSubmodules
+from synerfuse.core.ssm.mamba_layer import MambaLayer, MambaLayerSubmodules
+from synerfuse.core.ssm.mamba_mixer import MambaMixer, MambaMixerSubmodules
+from synerfuse.core.transformer.attention import SelfAttention, SelfAttentionSubmodules
+from synerfuse.core.transformer.custom_layers.transformer_engine import (
     TEDotProductAttention,
     TELayerNormColumnParallelLinear,
     TERowParallelLinear,
 )
-from megatron.core.transformer.enums import AttnMaskType
-from megatron.core.transformer.mlp import MLP, MLPSubmodules
-from megatron.core.transformer.spec_utils import ModuleSpec
-from megatron.core.transformer.transformer_layer import TransformerLayer, TransformerLayerSubmodules
+from synerfuse.core.transformer.enums import AttnMaskType
+from synerfuse.core.transformer.mlp import MLP, MLPSubmodules
+from synerfuse.core.transformer.spec_utils import ModuleSpec
+from synerfuse.core.transformer.transformer_layer import TransformerLayer, TransformerLayerSubmodules
 
 mamba_stack_spec = ModuleSpec(
     module=MambaStack,

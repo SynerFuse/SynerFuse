@@ -4,10 +4,10 @@ import pytest
 
 import torch
 
-from megatron.core.transformer.module import Float16Module, MegatronModule
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.module import Float16Module, MegatronModule
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 from tests.unit_tests.test_utilities import Utils
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
 
 DEVICE_CAPABILITY = None
 if torch.cuda.is_available():

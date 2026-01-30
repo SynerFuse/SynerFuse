@@ -6,17 +6,17 @@ from typing import List, Literal, Optional, Tuple
 import torch
 from torch import Tensor
 
-from megatron.core import InferenceParams, parallel_state, tensor_parallel
-from megatron.core.dist_checkpointing.mapping import ShardedStateDict
-from megatron.core.models.common.embeddings.language_model_embedding import LanguageModelEmbedding
-from megatron.core.models.common.embeddings.rotary_pos_embedding import RotaryEmbedding
-from megatron.core.models.common.language_module.language_module import LanguageModule
-from megatron.core.transformer.enums import AttnMaskType, ModelType
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.spec_utils import ModuleSpec
-from megatron.core.transformer.transformer_block import TransformerBlock
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.utils import make_tp_sharded_tensor_for_checkpoint
+from synerfuse.core import InferenceParams, parallel_state, tensor_parallel
+from synerfuse.core.dist_checkpointing.mapping import ShardedStateDict
+from synerfuse.core.models.common.embeddings.language_model_embedding import LanguageModelEmbedding
+from synerfuse.core.models.common.embeddings.rotary_pos_embedding import RotaryEmbedding
+from synerfuse.core.models.common.language_module.language_module import LanguageModule
+from synerfuse.core.transformer.enums import AttnMaskType, ModelType
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.spec_utils import ModuleSpec
+from synerfuse.core.transformer.transformer_block import TransformerBlock
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.utils import make_tp_sharded_tensor_for_checkpoint
 
 
 class T5LMHead(MegatronModule):

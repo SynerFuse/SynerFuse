@@ -6,15 +6,15 @@ import os
 import typing as T
 from types import SimpleNamespace
 
-from megatron.training.arguments import load_retro_config, parse_args, validate_args
-from megatron.core.datasets.retro.db.dataset import DBDataset
-from megatron.core.datasets.retro.db.utils import (
+from synerfuse.training.arguments import load_retro_config, parse_args, validate_args
+from synerfuse.core.datasets.retro.db.dataset import DBDataset
+from synerfuse.core.datasets.retro.db.utils import (
     get_indexed_dataset_infos as get_db_indexed_dataset_infos,
     get_merged_train_dataset as get_db_dataset,
 )
-from megatron.core.datasets.retro.query.retro_dataset import get_retro_datasets, RetroDataset
-from megatron.training.global_vars import set_global_variables
-from megatron.training.training import build_train_valid_test_datasets, update_train_iters
+from synerfuse.core.datasets.retro.query.retro_dataset import get_retro_datasets, RetroDataset
+from synerfuse.training.global_vars import set_global_variables
+from synerfuse.training.training import build_train_valid_test_datasets, update_train_iters
 from pretrain_retro import train_valid_test_datasets_provider
 from tools.retro.preprocess_data import get_tokenizers
 

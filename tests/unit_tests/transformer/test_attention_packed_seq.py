@@ -4,13 +4,13 @@ import pytest
 
 import torch
 
-from megatron.core.packed_seq_params import PackedSeqParams
-from megatron.core.transformer.attention import SelfAttention
-from megatron.core.transformer.enums import AttnMaskType
+from synerfuse.core.packed_seq_params import PackedSeqParams
+from synerfuse.core.transformer.attention import SelfAttention
+from synerfuse.core.transformer.enums import AttnMaskType
 from tests.unit_tests.test_utilities import Utils
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
 
 # Note: this test requires TE >= 0.13 as well as Flash Attention to run
 # FIXME this unit test doesn't work in the current test container. to be fixed soon

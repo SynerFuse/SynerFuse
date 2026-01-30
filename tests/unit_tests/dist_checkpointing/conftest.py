@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from megatron.core.dist_checkpointing.strategies.base import StrategyAction, get_default_strategy
+from synerfuse.core.dist_checkpointing.strategies.base import StrategyAction, get_default_strategy
 from tests.unit_tests.dist_checkpointing import TempNamedDir
 from tests.unit_tests.test_utilities import Utils
 

@@ -8,24 +8,24 @@ from typing import Union
 
 sys.path.append(os.path.abspath(os.path.join(
     os.path.join(os.path.dirname(__file__), "../../../"))))
-from megatron.training import get_args, get_retro_args
-from megatron.training import print_rank_0
-from megatron.training import get_tokenizer
-from megatron.training.checkpointing import load_checkpoint
-from megatron.training.initialize import initialize_megatron
-from megatron.core.models.gpt import GPTModel
-from megatron.training import get_model
+from synerfuse.training import get_args, get_retro_args
+from synerfuse.training import print_rank_0
+from synerfuse.training import get_tokenizer
+from synerfuse.training.checkpointing import load_checkpoint
+from synerfuse.training.initialize import initialize_megatron
+from synerfuse.core.models.gpt import GPTModel
+from synerfuse.training import get_model
 from tools.retro.text_generation.retro_api import retro_generate_and_post_process
 from tools.retro.sft.sft_retro import get_tasks_args
 from tools.retro.sft.dataset_conv import reformat_prompt, preprocess, reformat_prompt_short
 import numpy as np
 import time
-import megatron.legacy.model
-from megatron.training.arguments import core_transformer_config_from_args
+import synerfuse.legacy.model
+from synerfuse.training.arguments import core_transformer_config_from_args
 
 
 
-def model_provider(pre_process=True, post_process=True) -> Union[GPTModel, megatron.legacy.model.GPTModel]:
+def model_provider(pre_process=True, post_process=True) -> Union[GPTModel, synerfuse.legacy.model.GPTModel]:
     """Builds the model.
 
     Args:
@@ -34,7 +34,7 @@ def model_provider(pre_process=True, post_process=True) -> Union[GPTModel, megat
 
 
     Returns:
-        Union[GPTModel, megatron.legacy.model.GPTModel]: The returned model
+        Union[GPTModel, synerfuse.legacy.model.GPTModel]: The returned model
     """
     print_rank_0('building GPT model ...')
     args = get_args()
@@ -43,7 +43,7 @@ def model_provider(pre_process=True, post_process=True) -> Union[GPTModel, megat
     assert args.use_legacy_models, 'retro text generation only implemented for legacy models'
     
     # not support core model yet
-    model = megatron.legacy.model.GPTModel(
+    model = synerfuse.legacy.model.GPTModel(
         config,
         num_tokentypes=0,
         parallel_output=False,

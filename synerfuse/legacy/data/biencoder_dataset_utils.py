@@ -4,11 +4,11 @@ import time
 import numpy as np
 import torch
 
-from megatron.training import get_args, get_tokenizer, print_rank_0
-from megatron.core import mpu, tensor_parallel
-from megatron.legacy.data.dataset_utils import create_masked_lm_predictions, \
+from synerfuse.training import get_args, get_tokenizer, print_rank_0
+from synerfuse.core import mpu, tensor_parallel
+from synerfuse.legacy.data.dataset_utils import create_masked_lm_predictions, \
                                             pad_and_convert_to_numpy
-from megatron.legacy.data.data_samplers import MegatronPretrainingSampler
+from synerfuse.legacy.data.data_samplers import MegatronPretrainingSampler
 
 def make_attention_mask(source_block, target_block):
     """
@@ -163,7 +163,7 @@ def get_block_samples_mapping(block_dataset, title_dataset, data_prefix, num_epo
         print_rank_0(' > building samples index mapping for {} ...'.format(
             name))
 
-        from megatron.core.datasets import helpers
+        from synerfuse.core.datasets import helpers
         mapping_array = helpers.build_blocks_mapping(
             block_dataset.document_indices,
             block_dataset.sequence_lengths,

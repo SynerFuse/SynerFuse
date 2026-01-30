@@ -6,20 +6,20 @@ from functools import partial
 import sys
 import torch
 
-from megatron.training import get_args, get_num_microbatches
-from megatron.training import print_rank_0
-from megatron.training import get_timers
-from megatron.core import mpu
-from megatron.core.enums import ModelType
-from megatron.training.checkpointing import load_checkpoint
-from megatron.training.checkpointing import save_checkpoint
-from megatron.training.training import evaluate_and_print_results
-from megatron.training.training import setup_model_and_optimizer
-from megatron.training.training import train_step
-from megatron.training.training import training_log
-from megatron.training.utils import average_losses_across_data_parallel_group
-from megatron.training.utils import calc_params_l2_norm
-from megatron.training.utils import check_adlr_autoresume_termination
+from synerfuse.training import get_args, get_num_microbatches
+from synerfuse.training import print_rank_0
+from synerfuse.training import get_timers
+from synerfuse.core import mpu
+from synerfuse.core.enums import ModelType
+from synerfuse.training.checkpointing import load_checkpoint
+from synerfuse.training.checkpointing import save_checkpoint
+from synerfuse.training.training import evaluate_and_print_results
+from synerfuse.training.training import setup_model_and_optimizer
+from synerfuse.training.training import train_step
+from synerfuse.training.training import training_log
+from synerfuse.training.utils import average_losses_across_data_parallel_group
+from synerfuse.training.utils import calc_params_l2_norm
+from synerfuse.training.utils import check_adlr_autoresume_termination
 
 
 def process_batch(batch):

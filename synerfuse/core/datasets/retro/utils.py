@@ -13,13 +13,13 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from megatron.core import parallel_state
-from megatron.core.datasets.retro.config import RetroPreprocessingConfig
-from megatron.core.datasets.retro.query.multi_split_gpt_dataset import (
+from synerfuse.core import parallel_state
+from synerfuse.core.datasets.retro.config import RetroPreprocessingConfig
+from synerfuse.core.datasets.retro.query.multi_split_gpt_dataset import (
     MultiSplitGPTDataset,
     MultiSplitGPTDatasetConfig,
 )
-from megatron.core.utils import log_single_rank
+from synerfuse.core.utils import log_single_rank
 
 from .external_libs import h5py
 

@@ -1,8 +1,8 @@
 # Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
 """Megatron Vision Module."""
 
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 
 
 # Note: This is only a stub at the moment. This will be expanded in follow-up changes.

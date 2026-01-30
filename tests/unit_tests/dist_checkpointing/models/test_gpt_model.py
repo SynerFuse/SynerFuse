@@ -3,15 +3,15 @@ import pytest
 
 import torch
 
-from megatron.core import parallel_state as ps
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.models.gpt.gpt_model import GPTModel
+from synerfuse.core import parallel_state as ps
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.gpt.gpt_model import GPTModel
 from tests.unit_tests.dist_checkpointing.models.common import \
     common_test_simple_sharded_state_dict_save_load, \
     common_test_parallel_reconfiguration_e2e, \
     common_test_state_dict_comparison, common_test_vocab_size_padding_change
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.models.gpt.gpt_layer_specs import \
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.models.gpt.gpt_layer_specs import \
     get_gpt_layer_with_transformer_engine_spec as gpt_te_spec, get_gpt_layer_local_spec as gpt_local_spec
 
 

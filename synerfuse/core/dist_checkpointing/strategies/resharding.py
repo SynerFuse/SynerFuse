@@ -20,13 +20,13 @@ import torch
 from torch.distributed.checkpoint import ChunkStorageMetadata
 from torch.distributed.checkpoint.resharding import _shards_get_overlap_region_wrt_saved_tensor
 
-from megatron.core.dist_checkpointing import ShardedTensor
-from megatron.core.dist_checkpointing.core import CheckpointingException
-from megatron.core.dist_checkpointing.dict_utils import (
+from synerfuse.core.dist_checkpointing import ShardedTensor
+from synerfuse.core.dist_checkpointing.core import CheckpointingException
+from synerfuse.core.dist_checkpointing.dict_utils import (
     dict_list_map_inplace,
     extract_matching_values,
 )
-from megatron.core.dist_checkpointing.mapping import (
+from synerfuse.core.dist_checkpointing.mapping import (
     ReplicaId,
     ShardedStateDict,
     ShardedTensorFactory,

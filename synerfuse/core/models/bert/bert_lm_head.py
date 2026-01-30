@@ -1,21 +1,21 @@
 import torch
 from torch import Tensor
 
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.transformer.utils import get_linear_layer
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.utils import get_linear_layer
 
 try:
     import apex
 
-    from megatron.core.fusions.fused_layer_norm import FusedLayerNorm
+    from synerfuse.core.fusions.fused_layer_norm import FusedLayerNorm
 
     HAVE_APEX = True
     LNImpl = FusedLayerNorm
 except ImportError:
     import warnings
 
-    from megatron.core.transformer.torch_layer_norm import WrappedTorchLayerNorm
+    from synerfuse.core.transformer.torch_layer_norm import WrappedTorchLayerNorm
 
     warnings.warn(f'Apex is not installed. Falling back to Torch LayerNorm')
     LNImpl = WrappedTorchLayerNorm

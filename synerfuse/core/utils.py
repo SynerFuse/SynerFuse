@@ -20,8 +20,8 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import torch
 
-from megatron.core import parallel_state
-from megatron.core.dist_checkpointing.mapping import ShardedTensor
+from synerfuse.core import parallel_state
+from synerfuse.core.dist_checkpointing.mapping import ShardedTensor
 
 logger = logging.getLogger(__name__)
 
@@ -379,7 +379,7 @@ def drain_embedding_wgrad_compute(config, embedding_activation_buffer, grad_outp
 
     import fused_weight_gradient_mlp_cuda
 
-    from megatron.core.parallel_state import (
+    from synerfuse.core.parallel_state import (
         get_global_memory_buffer,
         get_tensor_model_parallel_group,
         get_tensor_model_parallel_world_size,

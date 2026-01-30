@@ -2,13 +2,13 @@
 
 import pytest
 import torch
-from megatron.core import parallel_state
+from synerfuse.core import parallel_state
 
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
-from megatron.core.transformer.moe.moe_layer import MoELayer
-from megatron.core.transformer.moe.moe_utils import permute, unpermute
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.training.initialize import _set_random_seed
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_with_transformer_engine_spec
+from synerfuse.core.transformer.moe.moe_layer import MoELayer
+from synerfuse.core.transformer.moe.moe_utils import permute, unpermute
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.training.initialize import _set_random_seed
 from tests.unit_tests.test_utilities import Utils
 
 

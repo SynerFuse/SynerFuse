@@ -4,7 +4,7 @@
 
 from dataclasses import dataclass
 
-from megatron.core.datasets.megatron_tokenizer import MegatronTokenizer
+from synerfuse.core.datasets.megatron_tokenizer import MegatronTokenizer
 
 
 @dataclass

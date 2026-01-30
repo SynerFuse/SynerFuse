@@ -15,9 +15,9 @@ import torch.nn.functional as F
 from functools import partial
 import torch.distributed as dist
 from torch.nn.init import trunc_normal_
-from megatron.legacy.model.transformer import DropPath
-from megatron.training import get_args
-from megatron.legacy.model import LayerNorm
+from synerfuse.legacy.model.transformer import DropPath
+from synerfuse.training import get_args
+from synerfuse.legacy.model import LayerNorm
 import numpy as np
 from math import sqrt
 

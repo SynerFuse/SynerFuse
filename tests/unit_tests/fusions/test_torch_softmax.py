@@ -1,9 +1,9 @@
 import pytest
 import torch
 
-from megatron.core.fusions.fused_softmax import FusedScaleMaskSoftmax
-from megatron.core.transformer.enums import AttnMaskType
-from megatron.core.transformer.utils import attention_mask_func
+from synerfuse.core.fusions.fused_softmax import FusedScaleMaskSoftmax
+from synerfuse.core.transformer.enums import AttnMaskType
+from synerfuse.core.transformer.utils import attention_mask_func
 
 
 class TestTorchSoftmax:

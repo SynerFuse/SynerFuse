@@ -15,14 +15,14 @@ from modelopt.torch.utils.distributed import set_data_parallel_group, set_tensor
 from tqdm import tqdm
 
 # [ModelOpt]: changing the default model provider to the ModelOpt version
-from megatron.core import mpu
-from megatron.inference.arguments import add_modelopt_args
-from megatron.inference.checkpointing import load_modelopt_checkpoint
-from megatron.inference.gpt.model_provider import model_provider
-from megatron.inference.text_generation import generate_and_post_process
-from megatron.training import get_args, get_model, initialize_megatron
-from megatron.training.checkpointing import save_checkpoint
-from megatron.training.utils import print_rank_0, unwrap_model
+from synerfuse.core import mpu
+from synerfuse.inference.arguments import add_modelopt_args
+from synerfuse.inference.checkpointing import load_modelopt_checkpoint
+from synerfuse.inference.gpt.model_provider import model_provider
+from synerfuse.inference.text_generation import generate_and_post_process
+from synerfuse.training import get_args, get_model, initialize_megatron
+from synerfuse.training.checkpointing import save_checkpoint
+from synerfuse.training.utils import print_rank_0, unwrap_model
 
 QUANT_CFG_CHOICES = {
     "int8": mtq.INT8_DEFAULT_CFG,

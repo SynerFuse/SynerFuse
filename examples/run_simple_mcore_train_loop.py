@@ -5,17 +5,17 @@ from torch.utils.data import DataLoader
 from functools import partial
 from pathlib import Path
 
-from megatron.core import parallel_state
-from megatron.core import dist_checkpointing
-from megatron.core.pipeline_parallel.schedules import get_forward_backward_func
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.models.gpt.gpt_model import GPTModel
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec
-from megatron.core.datasets.utils import compile_helpers 
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.gpt_dataset import GPTDatasetConfig, MockGPTDataset
-from megatron.training.tokenizer.tokenizer import _NullTokenizer
+from synerfuse.core import parallel_state
+from synerfuse.core import dist_checkpointing
+from synerfuse.core.pipeline_parallel.schedules import get_forward_backward_func
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.gpt.gpt_model import GPTModel
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec
+from synerfuse.core.datasets.utils import compile_helpers 
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.gpt_dataset import GPTDatasetConfig, MockGPTDataset
+from synerfuse.training.tokenizer.tokenizer import _NullTokenizer
 
 
 _SEQUENCE_LENGTH = 64

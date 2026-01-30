@@ -6,9 +6,9 @@ the async checkpoint save calls.
 """
 import logging
 
-from megatron.core.dist_checkpointing.strategies.async_utils import AsyncCallsQueue, AsyncRequest
-from megatron.training import get_args
-from megatron.training.utils import print_rank_0
+from synerfuse.core.dist_checkpointing.strategies.async_utils import AsyncCallsQueue, AsyncRequest
+from synerfuse.training import get_args
+from synerfuse.training.utils import print_rank_0
 
 logger = logging.getLogger(__name__)
 

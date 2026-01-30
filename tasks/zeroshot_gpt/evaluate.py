@@ -6,16 +6,16 @@ import math
 
 import torch
 
-from megatron.training import get_args
-from megatron.training import print_rank_0, is_last_rank
-from megatron.training import get_tokenizer
-from megatron.core import parallel_state, tensor_parallel
-from megatron.training.checkpointing import load_checkpoint
-from megatron.legacy.model import GPTModel
-from megatron.training import get_model
-from megatron.training.utils import get_ltor_masks_and_position_ids, unwrap_model
-from megatron.core.pipeline_parallel.p2p_communication import recv_forward, send_forward
-from megatron.training.arguments import core_transformer_config_from_args
+from synerfuse.training import get_args
+from synerfuse.training import print_rank_0, is_last_rank
+from synerfuse.training import get_tokenizer
+from synerfuse.core import parallel_state, tensor_parallel
+from synerfuse.training.checkpointing import load_checkpoint
+from synerfuse.legacy.model import GPTModel
+from synerfuse.training import get_model
+from synerfuse.training.utils import get_ltor_masks_and_position_ids, unwrap_model
+from synerfuse.core.pipeline_parallel.p2p_communication import recv_forward, send_forward
+from synerfuse.training.arguments import core_transformer_config_from_args
 from tasks.finetune_utils import build_data_loader
 
 from .datasets import build_dataset

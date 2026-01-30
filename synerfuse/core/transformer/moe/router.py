@@ -4,18 +4,18 @@ from abc import ABC, abstractmethod
 
 import torch
 
-from megatron.core import parallel_state
-from megatron.core.tensor_parallel import (
+from synerfuse.core import parallel_state
+from synerfuse.core.tensor_parallel import (
     gather_from_sequence_parallel_region,
     get_cuda_rng_tracker,
     get_data_parallel_rng_tracker_name,
 )
-from megatron.core.tensor_parallel.random import (
+from synerfuse.core.tensor_parallel.random import (
     get_cuda_rng_tracker,
     get_data_parallel_rng_tracker_name,
 )
-from megatron.core.transformer.module import MegatronModule
-from megatron.core.transformer.moe.moe_utils import (
+from synerfuse.core.transformer.module import MegatronModule
+from synerfuse.core.transformer.moe.moe_utils import (
     MoEAuxLossAutoScaler,
     save_to_aux_losses_tracker,
     sinkhorn,
@@ -23,7 +23,7 @@ from megatron.core.transformer.moe.moe_utils import (
     topk_softmax_with_capacity,
     z_loss_func,
 )
-from megatron.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.transformer.transformer_config import TransformerConfig
 
 
 class Router(ABC, MegatronModule):

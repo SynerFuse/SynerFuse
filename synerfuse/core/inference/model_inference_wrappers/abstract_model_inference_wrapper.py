@@ -5,17 +5,17 @@ from typing import Iterable, List, Union
 
 import torch
 
-from megatron.core import parallel_state, tensor_parallel
-from megatron.core.inference.common_inference_params import CommonInferenceParams
-from megatron.core.inference.communication_utils import (
+from synerfuse.core import parallel_state, tensor_parallel
+from synerfuse.core.inference.common_inference_params import CommonInferenceParams
+from synerfuse.core.inference.communication_utils import (
     recv_from_prev_pipeline_rank_,
     send_to_next_pipeline_rank,
 )
-from megatron.core.inference.model_inference_wrappers.inference_wrapper_config import (
+from synerfuse.core.inference.model_inference_wrappers.inference_wrapper_config import (
     InferenceWrapperConfig,
 )
-from megatron.core.inference_params import InferenceParams
-from megatron.core.models.gpt.gpt_model import GPTModel
+from synerfuse.core.inference_params import InferenceParams
+from synerfuse.core.models.gpt.gpt_model import GPTModel
 
 
 class AbstractModelInferenceWrapper(abc.ABC):

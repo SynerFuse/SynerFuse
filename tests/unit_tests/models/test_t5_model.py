@@ -4,11 +4,11 @@ import pytest
 
 import torch
 
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.models.T5.t5_model import T5Model
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.T5.t5_model import T5Model
 from tests.unit_tests.test_utilities import Utils
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
-from megatron.core.models.T5.t5_spec import (get_t5_encoder_with_transformer_engine_block_spec,
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.models.T5.t5_spec import (get_t5_encoder_with_transformer_engine_block_spec,
                                             get_t5_decoder_with_transformer_engine_block_spec,
                                             get_t5_encoder_with_local_block_spec,
                                             get_t5_decoder_with_local_block_spec)

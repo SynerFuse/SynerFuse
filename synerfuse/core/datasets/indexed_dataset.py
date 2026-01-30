@@ -24,14 +24,14 @@ except ModuleNotFoundError:
 import numpy
 import torch
 
-from megatron.core.datasets.utils_s3 import (
+from synerfuse.core.datasets.utils_s3 import (
     S3Config,
     is_s3_path,
     maybe_download_file,
     object_exists,
     parse_s3_path,
 )
-from megatron.core.utils import log_single_rank
+from synerfuse.core.utils import log_single_rank
 
 logger = logging.getLogger(__name__)
 

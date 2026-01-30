@@ -160,12 +160,12 @@ def _load_checkpoint(queue, args):
         sys.path.insert(0, args.megatron_path)
 
     try:
-        from megatron.training.arguments import parse_args, validate_args
-        from megatron.training.global_vars import set_args, set_global_variables
-        from megatron.legacy.model import module
-        from megatron.core import mpu
-        from megatron.core.enums import ModelType
-        from megatron.legacy import fused_kernels
+        from synerfuse.training.arguments import parse_args, validate_args
+        from synerfuse.training.global_vars import set_args, set_global_variables
+        from synerfuse.legacy.model import module
+        from synerfuse.core import mpu
+        from synerfuse.core.enums import ModelType
+        from synerfuse.legacy import fused_kernels
     except ModuleNotFoundError:
         print("Unable to import Megatron, please specify the path to Megatron using --megatron-path. Exiting.")
         queue.put("exit")

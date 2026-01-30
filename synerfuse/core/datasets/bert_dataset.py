@@ -5,12 +5,12 @@ from typing import Dict, List, Optional, Union
 
 import numpy
 
-from megatron.core.datasets.indexed_dataset import IndexedDataset
-from megatron.core.datasets.masked_dataset import (
+from synerfuse.core.datasets.indexed_dataset import IndexedDataset
+from synerfuse.core.datasets.masked_dataset import (
     MaskedWordPieceDataset,
     MaskedWordPieceDatasetConfig,
 )
-from megatron.core.datasets.utils import Split
+from synerfuse.core.datasets.utils import Split
 
 
 @dataclass

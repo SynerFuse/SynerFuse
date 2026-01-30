@@ -8,12 +8,12 @@ from typing import Any, Callable, Iterable, List, Optional, Type, Union
 import numpy
 import torch
 
-from megatron.core.datasets.blended_dataset import BlendedDataset
-from megatron.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
-from megatron.core.datasets.megatron_dataset import LowLevelDataset, MegatronDataset
-from megatron.core.datasets.utils import Split, normalize
-from megatron.core.parallel_state import get_virtual_pipeline_model_parallel_rank
-from megatron.core.utils import log_single_rank
+from synerfuse.core.datasets.blended_dataset import BlendedDataset
+from synerfuse.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
+from synerfuse.core.datasets.megatron_dataset import LowLevelDataset, MegatronDataset
+from synerfuse.core.datasets.utils import Split, normalize
+from synerfuse.core.parallel_state import get_virtual_pipeline_model_parallel_rank
+from synerfuse.core.utils import log_single_rank
 
 logger = logging.getLogger(__name__)
 

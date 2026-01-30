@@ -11,7 +11,7 @@ from torch.nn.parameter import Parameter
 from torch.nn import init
 import importlib
 
-from megatron.core.utils import make_viewless_tensor
+from synerfuse.core.utils import make_viewless_tensor
 
 try:
     from apex.contrib.layer_norm.layer_norm import FastLayerNormFN

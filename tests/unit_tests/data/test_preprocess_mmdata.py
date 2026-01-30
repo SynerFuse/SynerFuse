@@ -8,7 +8,7 @@ import tempfile
 import nltk
 import numpy
 
-from megatron.core.datasets.indexed_dataset import IndexedDataset
+from synerfuse.core.datasets.indexed_dataset import IndexedDataset
 from tests.unit_tests.data.test_preprocess_data import dummy_jsonl, gpt2_merge, gpt2_vocab
 from tools.merge_datasets import main as merge_main
 from tools.preprocess_mmdata import Encoder

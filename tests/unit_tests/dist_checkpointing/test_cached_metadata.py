@@ -7,10 +7,10 @@ from dataclasses import fields
 
 import torch
 
-from megatron.core.dist_checkpointing import ShardedTensor, load, save
-from megatron.core.dist_checkpointing.dict_utils import diff
-from megatron.core.dist_checkpointing.serialization import get_default_save_sharded_strategy
-from megatron.core.dist_checkpointing.strategies.async_utils import AsyncCallsQueue
+from synerfuse.core.dist_checkpointing import ShardedTensor, load, save
+from synerfuse.core.dist_checkpointing.dict_utils import diff
+from synerfuse.core.dist_checkpointing.serialization import get_default_save_sharded_strategy
+from synerfuse.core.dist_checkpointing.strategies.async_utils import AsyncCallsQueue
 from tests.unit_tests.dist_checkpointing import TempNamedDir
 from tests.unit_tests.test_utilities import Utils
 

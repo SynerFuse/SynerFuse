@@ -11,8 +11,8 @@ retro_chunk_length is 64, then the GPTChunkDataset will contain 100*(2048/64) =
 
 import torch
 
-from megatron.core.datasets.gpt_dataset import GPTDataset
-from megatron.core.datasets.retro.utils import get_num_chunks_per_sample
+from synerfuse.core.datasets.gpt_dataset import GPTDataset
+from synerfuse.core.datasets.retro.utils import get_num_chunks_per_sample
 
 from .utils import get_neighbor_dir
 

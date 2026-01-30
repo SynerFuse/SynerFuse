@@ -20,9 +20,9 @@ import numpy as np
 import torch
 from torch.utils.data import Subset
 
-from megatron.core.datasets.retro.config import RetroPreprocessingConfig
-from megatron.core.datasets.retro.external_libs import h5py
-from megatron.core.datasets.retro.utils import (
+from synerfuse.core.datasets.retro.config import RetroPreprocessingConfig
+from synerfuse.core.datasets.retro.external_libs import h5py
+from synerfuse.core.datasets.retro.utils import (
     GPTToTextDataset,
     get_blocks_by_rank,
     log_retro_rank_0,

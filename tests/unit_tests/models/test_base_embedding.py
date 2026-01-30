@@ -4,8 +4,8 @@ import pytest
 
 import torch
 
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.models.common.embeddings.language_model_embedding import LanguageModelEmbedding
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.common.embeddings.language_model_embedding import LanguageModelEmbedding
 from tests.unit_tests.test_utilities import Utils
 
 

@@ -8,12 +8,12 @@ import apex
 import einops
 import torch
 import torch.nn.functional as F
-from megatron.training import get_args, print_rank_0
-from megatron.legacy.model.utils import get_linear_layer
-from megatron.legacy.model.vision.vit_backbone import VitBackbone
-from megatron.legacy.model.module import MegatronModule
-from megatron.legacy.model.vision.mit_backbone import mit_b3
-from megatron.legacy.model.vision.utils import resize
+from synerfuse.training import get_args, print_rank_0
+from synerfuse.legacy.model.utils import get_linear_layer
+from synerfuse.legacy.model.vision.vit_backbone import VitBackbone
+from synerfuse.legacy.model.module import MegatronModule
+from synerfuse.legacy.model.vision.mit_backbone import mit_b3
+from synerfuse.legacy.model.vision.utils import resize
 
 
 class VitInpaintingModel(MegatronModule):

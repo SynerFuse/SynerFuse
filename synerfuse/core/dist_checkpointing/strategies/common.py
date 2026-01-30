@@ -9,8 +9,8 @@ from pathlib import Path
 
 import torch
 
-from megatron.core.dist_checkpointing.mapping import ShardedStateDict, StateDict
-from megatron.core.dist_checkpointing.strategies.base import (
+from synerfuse.core.dist_checkpointing.mapping import ShardedStateDict, StateDict
+from synerfuse.core.dist_checkpointing.strategies.base import (
     SaveCommonStrategy,
     StrategyAction,
     default_strategies,

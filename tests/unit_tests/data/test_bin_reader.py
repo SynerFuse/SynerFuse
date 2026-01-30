@@ -16,14 +16,14 @@ except ModuleNotFoundError:
     exceptions = ModuleType("botocore.exceptions")
     sys.modules[exceptions.__name__] = exceptions
 
-from megatron.core.datasets.indexed_dataset import (
+from synerfuse.core.datasets.indexed_dataset import (
     IndexedDataset,
     S3Config,
     _FileBinReader,
     _MMapBinReader,
     _S3BinReader,
 )
-from megatron.core.datasets.utils_s3 import S3_PREFIX, S3Client
+from synerfuse.core.datasets.utils_s3 import S3_PREFIX, S3Client
 from tests.unit_tests.data.test_preprocess_data import (
     build_datasets,
     dummy_jsonl,

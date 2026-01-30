@@ -1,7 +1,7 @@
 import math
 import torch
 import numpy as np
-from megatron.training import get_args
+from synerfuse.training import get_args
 
 def slidingcrops(img, mask):
     # img: [b c h w]

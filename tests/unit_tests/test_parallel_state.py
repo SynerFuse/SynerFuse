@@ -1,5 +1,5 @@
 import torch
-import megatron.core.parallel_state as ps
+import synerfuse.core.parallel_state as ps
 import pytest
 from tests.unit_tests.test_utilities import Utils
 import os 

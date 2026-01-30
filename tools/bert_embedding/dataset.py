@@ -3,7 +3,7 @@
 import numpy as np
 import torch
 
-from megatron.training import get_args, get_tokenizer
+from synerfuse.training import get_args, get_tokenizer
 
 
 class BertEmbeddingDataset(torch.utils.data.Dataset):

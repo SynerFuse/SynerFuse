@@ -1,8 +1,8 @@
 from typing import Dict
 import torch
-from megatron.core.inference.common_inference_params import CommonInferenceParams
-from megatron.core.inference.inference_request import InferenceRequest, Status
-from megatron.core.inference.scheduler import Scheduler
+from synerfuse.core.inference.common_inference_params import CommonInferenceParams
+from synerfuse.core.inference.inference_request import InferenceRequest, Status
+from synerfuse.core.inference.scheduler import Scheduler
 
 class TestScheduler:
 

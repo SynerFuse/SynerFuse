@@ -11,10 +11,10 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy
 import torch
 
-from megatron.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
-from megatron.core.datasets.megatron_dataset import MegatronDataset
-from megatron.core.datasets.utils import normalize
-from megatron.core.utils import log_single_rank
+from synerfuse.core.datasets.blended_megatron_dataset_config import BlendedMegatronDatasetConfig
+from synerfuse.core.datasets.megatron_dataset import MegatronDataset
+from synerfuse.core.datasets.utils import normalize
+from synerfuse.core.utils import log_single_rank
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +139,7 @@ class BlendedDataset(torch.utils.data.Dataset):
                 logger, logging.INFO, f"\tBuild and save the dataset and dataset sample indexes"
             )
             t_beg = time.time()
-            from megatron.core.datasets import helpers
+            from synerfuse.core.datasets import helpers
 
             if self.size is not None:
                 dataset_index = numpy.zeros(self.size, dtype=numpy.int16)

@@ -5,7 +5,7 @@ from typing import Callable, Dict
 
 import torch
 
-from megatron.core.datasets.gpt_dataset import GPTDatasetConfig, MockGPTDataset
+from synerfuse.core.datasets.gpt_dataset import GPTDatasetConfig, MockGPTDataset
 
 
 @dataclass

@@ -4,7 +4,7 @@ import math
 
 import torch
 
-from megatron.core import parallel_state
+from synerfuse.core import parallel_state
 
 
 def switch_load_balancing_loss_func(

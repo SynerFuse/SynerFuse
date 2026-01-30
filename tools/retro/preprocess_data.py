@@ -13,36 +13,36 @@ import os
 import sys
 import torch
 
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.utils import get_blend_from_list
-from megatron.core.datasets.retro.db import build_db
-from megatron.core.datasets.retro.index import add_to_index, train_index
-from megatron.core.datasets.retro.config import (
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.utils import get_blend_from_list
+from synerfuse.core.datasets.retro.db import build_db
+from synerfuse.core.datasets.retro.index import add_to_index, train_index
+from synerfuse.core.datasets.retro.config import (
     RetroBertEmbedders,
     RetroGPTChunkDatasets,
     RetroPreprocessingConfig,
     RetroTokenizers,
 )
-from megatron.core.datasets.retro.query.gpt_chunk_dataset import build_gpt_chunk_datasets_from_gpt_datasets
-from megatron.core.datasets.retro.query.multi_split_gpt_dataset import (
+from synerfuse.core.datasets.retro.query.gpt_chunk_dataset import build_gpt_chunk_datasets_from_gpt_datasets
+from synerfuse.core.datasets.retro.query.multi_split_gpt_dataset import (
     MultiSplitGPTDataset,
     MultiSplitGPTDatasetConfig,
 )
-from megatron.core.datasets.retro.query.query import query_neighbors
-from megatron.core.datasets.retro.query.utils import get_query_dir
-from megatron.core.datasets.retro.utils import retro_makedir
-from megatron.core.models.retro.utils import (
+from synerfuse.core.datasets.retro.query.query import query_neighbors
+from synerfuse.core.datasets.retro.query.utils import get_query_dir
+from synerfuse.core.datasets.retro.utils import retro_makedir
+from synerfuse.core.models.retro.utils import (
     get_config_path,
     get_gpt_data_dir,
 )
-from megatron.training import get_args, initialize_megatron, print_rank_0
-from megatron.training.arguments import core_transformer_config_from_args
-from megatron.training.tokenizer.tokenizer import (
+from synerfuse.training import get_args, initialize_megatron, print_rank_0
+from synerfuse.training.arguments import core_transformer_config_from_args
+from synerfuse.training.tokenizer.tokenizer import (
     _BertWordPieceTokenizer,
     _GPT2BPETokenizer,
     _GPTSentencePieceTokenizer,
 )
-from megatron.training import get_train_valid_test_num_samples
+from synerfuse.training import get_train_valid_test_num_samples
 from pretrain_gpt import is_dataset_built_on_rank
 from tools.bert_embedding import BertEmbedder, DiskDataParallelBertEmbedder
 from tools.retro.config_utils import add_config_args

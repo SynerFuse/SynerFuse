@@ -7,14 +7,14 @@ import einops
 import torch
 import apex
 import torch.nn.functional as F
-from megatron.training import get_args
-from megatron.legacy.model.transformer import ParallelTransformer
-from megatron.legacy.model.utils import (
+from synerfuse.training import get_args
+from synerfuse.legacy.model.transformer import ParallelTransformer
+from synerfuse.legacy.model.utils import (
     get_linear_layer,
     init_method_normal,
     scaled_init_method_normal,
 )
-from megatron.legacy.model.module import MegatronModule
+from synerfuse.legacy.model.module import MegatronModule
 
 CLASS_TOKEN_LENGTH = 8
 

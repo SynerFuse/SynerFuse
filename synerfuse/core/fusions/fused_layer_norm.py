@@ -9,8 +9,8 @@ from torch import Tensor
 from torch.nn import init
 from torch.nn.parameter import Parameter
 
-from megatron.core.transformer import TransformerConfig
-from megatron.core.utils import make_viewless_tensor
+from synerfuse.core.transformer import TransformerConfig
+from synerfuse.core.utils import make_viewless_tensor
 
 try:
     from apex.contrib.layer_norm.layer_norm import FastLayerNormFN

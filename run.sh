@@ -13,10 +13,10 @@ MASTER_PORT=6007
 NNODES=1
 NODE_RANK=0
 
-CHECKPOINT_PATH=/data2/share/llama-dataset/cp
-TENSORBOARD_LOGS_PATH=/data2/share/llama-dataset/tb
-TOKENIZER_PATH=/data2/nfs/llama-dataset/tokenizer.model
-DATA_PATH=/data2/nfs/llama-dataset/merged-1t/merged-1t
+CHECKPOINT_PATH=path/to/checkpoint
+TENSORBOARD_LOGS_PATH=path/to/tensorboard_logs
+TOKENIZER_PATH=path/to/tokenizer.model
+DATA_PATH=path/to/data
 
 # 7 B
 HIDDEN_SIZE=4096 

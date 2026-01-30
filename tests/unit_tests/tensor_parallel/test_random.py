@@ -1,6 +1,6 @@
-from megatron.core.tensor_parallel.random import CudaRNGStatesTracker
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed,get_cuda_rng_tracker
-from megatron.core.tensor_parallel.random import checkpoint
+from synerfuse.core.tensor_parallel.random import CudaRNGStatesTracker
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed,get_cuda_rng_tracker
+from synerfuse.core.tensor_parallel.random import checkpoint
 from tests.unit_tests.test_utilities import Utils
 import pytest
 import torch

@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 
 import torch
 
-from megatron.core.jit import jit_fuser
+from synerfuse.core.jit import jit_fuser
 
 
 def _bias_dropout_add_func(x_with_bias, residual, prob, training):

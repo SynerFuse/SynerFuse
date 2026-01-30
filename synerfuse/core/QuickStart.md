@@ -34,7 +34,7 @@ The following utility when called initalizes your distributed setup.
 ```python
 import os
 import torch
-from megatron.core import parallel_state
+from synerfuse.core import parallel_state
 
 def initialize_distributed(tensor_model_parallel_size = 1, pipeline_model_parallel_size = 1):
     # Torch setup for distributed training
@@ -51,9 +51,9 @@ def initialize_distributed(tensor_model_parallel_size = 1, pipeline_model_parall
 **STEP 2 - GPT Model Setup**
 The following step shows you how you can quickly create a GPT model. For a list of other configs that you can pass into the model look into [transformer_config.py](https://github.com/NVIDIA/Megatron-LM/tree/main/megatron/core/transformer/transformer_config.py)
 ```
-from megatron.core.transformer.transformer_config import TransformerConfig
-from megatron.core.models.gpt.gpt_model import GPTModel
-from megatron.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec
+from synerfuse.core.transformer.transformer_config import TransformerConfig
+from synerfuse.core.models.gpt.gpt_model import GPTModel
+from synerfuse.core.models.gpt.gpt_layer_specs import get_gpt_layer_local_spec
 
 def model_provider():
     """Build the model."""
@@ -84,10 +84,10 @@ To find more information about megatron core data pipeline please refer to [this
 import torch
 from torch.utils.data import DataLoader
 
-from megatron.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
-from megatron.core.datasets.gpt_dataset import GPTDatasetConfig, MockGPTDataset
-from megatron.training.tokenizer.tokenizer import _NullTokenizer
-from megatron.core.datasets.utils import compile_helpers
+from synerfuse.core.datasets.blended_megatron_dataset_builder import BlendedMegatronDatasetBuilder
+from synerfuse.core.datasets.gpt_dataset import GPTDatasetConfig, MockGPTDataset
+from synerfuse.training.tokenizer.tokenizer import _NullTokenizer
+from synerfuse.core.datasets.utils import compile_helpers
 
 _SEQUENCE_LENGTH = 64
 
@@ -157,7 +157,7 @@ def forward_step_func(data_iterator, model):
 Megatron core uses distributed checkpoint for loading and saving model. This gives you the flexiblity to convert model from one model parallel setting to another when you load a model (i.e A model trained with tensor parallel size 2, can now be loaded as tensor model parallel size 4 etc.)
 
 ```python
-from megatron.core import dist_checkpointing
+from synerfuse.core import dist_checkpointing
 
 def save_distributed_checkpoint(checkpoint_path, gpt_model):
     sharded_state_dict = gpt_model.sharded_state_dict(prefix='')
@@ -177,8 +177,8 @@ The following is the main function that needs to go into your script.
 ```python
 from pathlib import Path
 from torch.optim import Adam
-from megatron.core.pipeline_parallel.schedules import get_forward_backward_func
-from megatron.core.tensor_parallel.random import model_parallel_cuda_manual_seed
+from synerfuse.core.pipeline_parallel.schedules import get_forward_backward_func
+from synerfuse.core.tensor_parallel.random import model_parallel_cuda_manual_seed
 
 if __name__ == "__main__":
     initialize_distributed(tensor_model_parallel_size=2, pipeline_model_parallel_size=1)

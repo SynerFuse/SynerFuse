@@ -2,7 +2,7 @@ import warnings
 
 import torch
 
-from megatron.core.transformer import TransformerConfig
+from synerfuse.core.transformer import TransformerConfig
 
 
 class WrappedTorchLayerNorm(torch.nn.LayerNorm):
