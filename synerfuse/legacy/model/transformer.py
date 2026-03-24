@@ -1360,12 +1360,24 @@ def _get_num_layers(args, model_type, is_decoder=False):
             num_layers = args.decoder_num_layers
     return num_layers
 
-def _get_layer_info(args):
-    assert args.hetero_pipeline_stages is not None, "Only pipeline parallelism is supported."
+def _get_layer_info(config):
     pipeline_rank = mpu.get_pipeline_model_parallel_rank()
-    pipeline_stages = [item for sublist in args.hetero_pipeline_stages for item in sublist]
-    offset = sum(([0] + pipeline_stages)[: pipeline_rank + 1])
-    num_layers = pipeline_stages[pipeline_rank]
+    if config.enable_hetero:
+        if config.hetero_pipeline_stages is not None and config.hetero_pipeline_layer_split is not None:
+            raise ValueError("Cannot set both hetero_pipeline_stages and hetero_pipeline_layer_split simultaneously.")
+        elif config.hetero_pipeline_layer_split is not None:
+            offset = sum(([0] + config.hetero_pipeline_layer_split)[: pipeline_rank + 1])
+            num_layers = config.hetero_pipeline_layer_split[pipeline_rank]
+        elif config.hetero_pipeline_stages is not None:
+            pipeline_stages = [item for sublist in config.hetero_pipeline_stages for item in sublist]
+            offset = sum(([0] + pipeline_stages)[: pipeline_rank + 1])
+            num_layers = pipeline_stages[pipeline_rank]
+        else:
+            raise ValueError("Must set hetero_pipeline_stages or hetero_pipeline_layer_split.")
+    else:
+        pipeline_stages = [item for sublist in config.hetero_pipeline_stages for item in sublist]
+        offset = sum(([0] + pipeline_stages)[: pipeline_rank + 1])
+        num_layers = pipeline_stages[pipeline_rank]
     torch.distributed.barrier()
     for i in range(torch.distributed.get_world_size()):
         if i == torch.distributed.get_rank():
@@ -1504,11 +1516,22 @@ class ParallelTransformer(MegatronModule):
         self.checkpoint_core_attention = config.recompute_granularity == 'selective'
 
         # Number of layers.
-        if args.hetero_pipeline_stages is None:
-            self.num_layers = _get_num_layers(args, model_type,
-                                              layer_type == LayerType.decoder)
+        if config.enable_hetero:
+            if config.hetero_pipeline_stages is not None and config.hetero_pipeline_layer_split is not None:
+                raise ValueError("Cannot set both hetero_pipeline_stages and hetero_pipeline_layer_split simultaneously.")
+            elif config.hetero_pipeline_layer_split is not None:
+                offset, self.num_layers = _get_layer_info(config)
+            elif config.hetero_pipeline_stages is None:
+                offset, self.num_layers = _get_layer_info(config)
+            else:
+                self.num_layers = _get_num_layers(args, model_type,
+                                            layer_type==LayerType.decoder)
         else:
-            offset, self.num_layers = _get_layer_info(args)
+            if args.hetero_pipeline_stages is None:
+                self.num_layers = _get_num_layers(args, model_type,
+                                              layer_type == LayerType.decoder)
+            else:
+                offset, self.num_layers = _get_layer_info(config)
 
         self.drop_path_rates = [
             rate.item() for rate in

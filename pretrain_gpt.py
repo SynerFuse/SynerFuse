@@ -31,6 +31,7 @@ from synerfuse.core.models.gpt.gpt_layer_specs import (
     get_gpt_layer_local_spec,
     get_gpt_layer_with_transformer_engine_spec,
 )
+from synerfuse.core import parallel_state
 
 
 stimer = StragglerDetector()
@@ -128,6 +129,8 @@ def loss_func(loss_mask: torch.Tensor, output_tensor: torch.Tensor):
     loss_mask = loss_mask.view(-1).float()
     total_tokens = loss_mask.sum()
     loss = torch.cat([torch.sum(losses.view(-1) * loss_mask).view(1), total_tokens.view(1)])
+
+    args.context_parallel_size = parallel_state.get_context_parallel_world_size()
 
     if args.context_parallel_size > 1:
         torch.distributed.all_reduce(loss, group=mpu.get_context_parallel_group())
