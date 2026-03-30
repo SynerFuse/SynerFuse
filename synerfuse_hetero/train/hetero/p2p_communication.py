@@ -1,0 +1,551 @@
+# Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+import operator
+from functools import reduce
+from typing import Callable, List, Optional, Tuple, Union
+
+import torch
+
+from synerfuse import core
+from synerfuse.core import ModelParallelConfig
+from synerfuse.core.parallel_state import (
+    get_pipeline_model_parallel_group,
+    get_pipeline_model_parallel_next_rank,
+    get_pipeline_model_parallel_prev_rank,
+    get_pipeline_model_parallel_rank,
+)
+from synerfuse.core.pipeline_parallel.p2p_communication import _communicate
+
+from synerfuse_hetero.train import get_parallel_context
+from synerfuse_hetero.train.hetero.parallel_context import ParallelContext
+
+# Types
+Shape = Union[List[int], torch.Size]
+
+
+def warm_up_comm_group_hetero(config: ModelParallelConfig):
+    """ Warm up the communication for all PP groups, to avoid the hang issue.
+
+    P2P comm would call batch_isend_irecv API, which requires
+    all ranks of the group to participate if this API is the
+    first collective call in the group passed to `dist.P2POp`.
+
+    See batch_isend_irecv for more details.
+    """
+    group = None
+    rank = torch.distributed.get_rank()
+    para_ctx = get_parallel_context()
+    pp_groups = para_ctx.get_pipeline_model_parallel_group()
+    # This is arbitrary because the shape of the recv tensor needs
+    # to be specified when communicating.
+    # It can be changed into any other shape.
+    tensor_shape = [1]
+    to_send_tensor = torch.empty(
+        tensor_shape,
+        requires_grad=True,
+        device=torch.cuda.current_device(),
+        dtype=config.pipeline_dtype,
+    )
+    to_recv_tensor = torch.empty(
+        tensor_shape,
+        requires_grad=True,
+        device=torch.cuda.current_device(),
+        dtype=config.pipeline_dtype,
+    )
+
+    for pp_group in pp_groups:
+        group_ranks = torch.distributed.get_process_group_ranks(pp_group)
+        if rank == group_ranks[0]:
+            _communicate(
+                tensor_send_next=to_send_tensor,
+                tensor_send_prev=None,
+                recv_prev=False,
+                recv_next=False,
+                tensor_shape=to_recv_tensor.shape,
+                config=config,
+                group=pp_group,
+            )
+        elif rank == group_ranks[-1]:
+            _communicate(
+                tensor_send_next=None,
+                tensor_send_prev=None,
+                recv_prev=True,
+                recv_next=False,
+                tensor_shape=to_recv_tensor.shape,
+                config=config,
+                group=pp_group,
+            )
+        elif rank in group_ranks:
+            _communicate(
+                tensor_send_next=to_send_tensor,
+                tensor_send_prev=None,
+                recv_prev=True,
+                recv_next=False,
+                tensor_shape=to_recv_tensor.shape,
+                config=config,
+                group=pp_group,
+            )
+
+
+def is_inter_mesh_comm(para_ctx: ParallelContext, comm_with_front_layer: bool):
+    """ Judge if the p2p communication across meshes.
+
+    comm_with_front_layer: if this communication is established with front layer,
+        including send_backward and recv_forward
+    """
+
+    assert para_ctx is not None, "Specify ParallelContext Necessary"
+    assert comm_with_front_layer is not None, "Specify Communication Direction Necessary"
+    if comm_with_front_layer:
+        # To judge if current rank is in the first stage of current mesh.
+        # In this condition, its pp rank should equal to
+        # the sum of pp size of all previous meshes
+        total_prev_pipeline_model_parallel_size = 0
+        for i in range(0, para_ctx._current_process_mesh_index):
+            total_prev_pipeline_model_parallel_size += para_ctx._process_meshes[i]._rank_generator.pp
+        return get_pipeline_model_parallel_rank() == total_prev_pipeline_model_parallel_size
+    else:
+        # To judge if current rank is in the last stage of current mesh.
+        # In this condition, its pp rank should equal to
+        # the (sum of pp size of all previous and current meshes) - 1
+        total_current_pipeline_model_parallel_size = 0
+        for i in range(0, min(para_ctx._current_process_mesh_index + 1, len(para_ctx._process_meshes))):
+            total_current_pipeline_model_parallel_size += para_ctx._process_meshes[i]._rank_generator.pp
+        return get_pipeline_model_parallel_rank() == total_current_pipeline_model_parallel_size - 1
+
+
+def recv_forward_hetero(tensor_shape: Shape, config: ModelParallelConfig) -> torch.Tensor:
+    """ Receive tensor from previous rank in pipeline (forward receive).
+
+    See _communicate for argument details.
+    """
+
+    if core.parallel_state.is_pipeline_first_stage():
+        input_tensor = None
+    else:
+        if config.timers is not None:
+            config.timers('forward-recv', log_level=2).start()
+        rank = torch.distributed.get_rank()
+        para_ctx = get_parallel_context()
+        if not is_inter_mesh_comm(para_ctx=para_ctx, comm_with_front_layer=True):
+            group = None
+            pp_groups = para_ctx.get_pipeline_model_parallel_group()
+            for pp_group in pp_groups:
+                if rank in torch.distributed.get_process_group_ranks(pp_group):
+                    group = pp_group
+                    break
+            input_tensor, _, _ = _communicate(
+                tensor_send_next=None,
+                tensor_send_prev=None,
+                recv_prev=True,
+                recv_next=False,
+                tensor_shape=tensor_shape,
+                config=config,
+                group=group,
+            )
+        else:
+            tensor_slices = para_ctx.get_inter_mesh_tensor_slices_tp_cp(
+                rank=rank, local_tensor_shape=tensor_shape, next=False
+            )
+            input_tensor = torch.empty(tensor_shape,
+                                       device=torch.cuda.current_device(),
+                                       dtype=config.pipeline_dtype,
+                                       requires_grad=True)
+            if tensor_slices is not None:
+                for tensor_slice in tensor_slices:
+                    dst_rank, (dp_start, dp_end), sp_start_end_lst, local_hidden_size = tensor_slice
+                    
+                    recv_sp_len = 0
+                    for sp_start, sp_end in sp_start_end_lst:
+                        recv_sp_len += sp_end - sp_start
+                    tensor_shape_sliced = (recv_sp_len, dp_end - dp_start, local_hidden_size)
+
+                    group = None
+                    pp_groups = para_ctx.get_pipeline_model_parallel_group()
+                    for pp_group in pp_groups:
+                        pp_group_ranks = torch.distributed.get_process_group_ranks(pp_group)
+                        if rank in pp_group_ranks and dst_rank in pp_group_ranks:
+                            group = pp_group
+                            break
+                    input_tensor_sliced, _, _ = _communicate(
+                        tensor_send_next=None,
+                        tensor_send_prev=None,
+                        recv_prev=True,
+                        recv_next=False,
+                        tensor_shape=tensor_shape_sliced,
+                        config=config,
+                        group=group,
+                    )
+                    
+                    start_index = 0
+                    for sp_start, sp_end in sp_start_end_lst:
+                        slice_length = sp_end - sp_start
+                        sliced_part = input_tensor_sliced[start_index:start_index + slice_length, :, :]
+                        input_tensor.data[sp_start:sp_end, dp_start:dp_end, :] = sliced_part
+                        start_index += slice_length
+        if config.timers is not None:
+            config.timers('forward-recv').stop()
+    return input_tensor
+
+
+def recv_backward_hetero(tensor_shape: Shape, config: ModelParallelConfig) -> torch.Tensor:
+    """Receive tensor from next rank in pipeline (backward receive).
+
+    See _communicate for argument details.
+    """
+
+    if core.parallel_state.is_pipeline_last_stage():
+        output_tensor_grad = None
+    else:
+        if config.timers is not None:
+            config.timers('backward-recv', log_level=2).start()
+        rank = torch.distributed.get_rank()
+        para_ctx = get_parallel_context()
+        if not is_inter_mesh_comm(para_ctx=para_ctx, comm_with_front_layer=False):
+            group = None
+            pp_groups = para_ctx.get_pipeline_model_parallel_group()
+            for pp_group in pp_groups:
+                if rank in torch.distributed.get_process_group_ranks(pp_group):
+                    group = pp_group
+                    break
+            _, output_tensor_grad, _ = _communicate(
+                tensor_send_next=None,
+                tensor_send_prev=None,
+                recv_prev=False,
+                recv_next=True,
+                tensor_shape=tensor_shape,
+                config=config,
+                group=group,
+            )
+        else:
+            tensor_slices = para_ctx.get_inter_mesh_tensor_slices_tp_cp(
+                rank=rank, local_tensor_shape=tensor_shape, next=True
+            )
+            output_tensor_grad = torch.empty(tensor_shape,
+                                             device=torch.cuda.current_device(),
+                                             dtype=config.pipeline_dtype,
+                                             requires_grad=True)
+            if tensor_slices is not None:
+                for tensor_slice in tensor_slices:
+                    dst_rank, (dp_start, dp_end), sp_start_end_lst, local_hidden_size = tensor_slice
+
+                    recv_sp_len = 0
+                    for sp_start, sp_end in sp_start_end_lst:
+                        recv_sp_len += sp_end - sp_start
+                    tensor_shape_sliced = (recv_sp_len, dp_end - dp_start, local_hidden_size)
+
+                    group = None
+                    pp_groups = para_ctx.get_pipeline_model_parallel_group()
+                    for pp_group in pp_groups:
+                        pp_group_ranks = torch.distributed.get_process_group_ranks(pp_group)
+                        if rank in pp_group_ranks and dst_rank in pp_group_ranks:
+                            group = pp_group
+                            break
+                    _, output_tensor_grad_sliced, _ = _communicate(
+                        tensor_send_next=None,
+                        tensor_send_prev=None,
+                        recv_prev=False,
+                        recv_next=True,
+                        tensor_shape=tensor_shape_sliced,
+                        config=config,
+                        group=group,
+                    )
+
+                    start_index = 0
+                    for sp_start, sp_end in sp_start_end_lst:
+                        slice_length = sp_end - sp_start
+                        sliced_part = output_tensor_grad_sliced[start_index: start_index + slice_length, :, :]
+                        output_tensor_grad.data[sp_start:sp_end, dp_start:dp_end, :] = sliced_part
+                        start_index += slice_length
+        if config.timers is not None:
+            config.timers('backward-recv').stop()
+    return output_tensor_grad
+
+
+def send_forward_hetero(output_tensor: torch.Tensor, config: ModelParallelConfig) -> None:
+    """Send tensor to next rank in pipeline (forward send).
+
+    See _communicate for argument details.
+    """
+
+    if not core.parallel_state.is_pipeline_last_stage():
+        if config.timers is not None:
+            config.timers('forward-send', log_level=2).start()
+        rank = torch.distributed.get_rank()
+        para_ctx = get_parallel_context()
+        if not is_inter_mesh_comm(para_ctx=para_ctx, comm_with_front_layer=False):
+            group = None
+            pp_groups = para_ctx.get_pipeline_model_parallel_group()
+            for pp_group in pp_groups:
+                if rank in torch.distributed.get_process_group_ranks(pp_group):
+                    group = pp_group
+                    break
+            _communicate(
+                tensor_send_next=output_tensor,
+                tensor_send_prev=None,
+                recv_prev=False,
+                recv_next=False,
+                tensor_shape=None,
+                config=config,
+                group=group,
+            )
+        else:
+            tensor_slices = para_ctx.get_inter_mesh_tensor_slices_tp_cp(
+                rank=rank, local_tensor_shape=output_tensor.shape, next=True
+            )
+            if tensor_slices is not None:
+                for tensor_slice in tensor_slices:
+                    dst_rank, (dp_start, dp_end), sp_start_end_lst, local_hidden_size = tensor_slice
+
+                    all_output_tensor_sliced = []
+                    for sp_start, sp_end in sp_start_end_lst:
+                        output_tensor_sliced = output_tensor[sp_start:sp_end, dp_start:dp_end, :]
+                        all_output_tensor_sliced.append(output_tensor_sliced)
+                    output_tensor_concatenated = torch.cat(all_output_tensor_sliced, dim=0)
+
+                    group = None
+                    pp_groups = para_ctx.get_pipeline_model_parallel_group()
+                    for pp_group in pp_groups:
+                        pp_group_ranks = torch.distributed.get_process_group_ranks(pp_group)
+                        if rank in pp_group_ranks and dst_rank in pp_group_ranks:
+                            group = pp_group
+                            break
+                    _communicate(
+                        tensor_send_next=output_tensor_concatenated,
+                        tensor_send_prev=None,
+                        recv_prev=False,
+                        recv_next=False,
+                        tensor_shape=None,
+                        config=config,
+                        group=group,
+                    )
+        if config.timers is not None:
+            config.timers('forward-send').stop()
+
+
+def send_backward_hetero(input_tensor_grad: torch.Tensor, config: ModelParallelConfig) -> None:
+    """Send tensor to previous rank in pipeline (backward send).
+
+    See _communicate for argument details.
+    """
+
+    if not core.parallel_state.is_pipeline_first_stage():
+        if config.timers is not None:
+            config.timers('backward-send', log_level=2).start()
+        rank = torch.distributed.get_rank()
+        para_ctx = get_parallel_context()
+        if not is_inter_mesh_comm(para_ctx=para_ctx, comm_with_front_layer=True):
+            group = None
+            pp_groups = para_ctx.get_pipeline_model_parallel_group()
+            for pp_group in pp_groups:
+                if rank in torch.distributed.get_process_group_ranks(pp_group):
+                    group = pp_group
+                    break
+            _communicate(
+                tensor_send_next=None,
+                tensor_send_prev=input_tensor_grad,
+                recv_prev=False,
+                recv_next=False,
+                tensor_shape=None,
+                config=config,
+                group=group,
+            )
+        else:
+            tensor_slices = para_ctx.get_inter_mesh_tensor_slices_tp_cp(
+                rank=rank, local_tensor_shape=input_tensor_grad.shape, next=False
+            )
+            if tensor_slices is not None:
+                for tensor_slice in tensor_slices:
+                    dst_rank, (dp_start, dp_end), sp_start_end_lst, local_hidden_size = tensor_slice
+
+                    all_input_tensor_grad_sliced = []
+                    for sp_start, sp_end in sp_start_end_lst:
+                        input_tensor_grad_sliced = input_tensor_grad[sp_start:sp_end, dp_start:dp_end, :]
+                        all_input_tensor_grad_sliced.append(input_tensor_grad_sliced)
+                    input_tensor_grad_concatenated = torch.cat(all_input_tensor_grad_sliced, dim=0)
+
+                    group = None
+                    pp_groups = para_ctx.get_pipeline_model_parallel_group()
+                    for pp_group in pp_groups:
+                        pp_group_ranks = torch.distributed.get_process_group_ranks(pp_group)
+                        if rank in pp_group_ranks and dst_rank in pp_group_ranks:
+                            group = pp_group
+                            break
+                    _communicate(
+                        tensor_send_next=None,
+                        tensor_send_prev=input_tensor_grad_concatenated,
+                        recv_prev=False,
+                        recv_next=False,
+                        tensor_shape=None,
+                        config=config,
+                        group=group,
+                    )
+        if config.timers is not None:
+            config.timers('backward-send').stop()
+
+
+def send_forward_recv_backward_hetero(
+        output_tensor: torch.Tensor, tensor_shape: Shape, config: ModelParallelConfig
+) -> torch.Tensor:
+    """Batched send and recv with next rank in pipeline.
+
+    See _communicate for argument details.
+    """
+
+    if core.parallel_state.is_pipeline_last_stage():
+        output_tensor_grad = None
+    else:
+        if config.timers is not None:
+            config.timers('forward-send-backward-recv', log_level=2).start()
+        rank = torch.distributed.get_rank()
+        para_ctx = get_parallel_context()
+        if not is_inter_mesh_comm(para_ctx=para_ctx, comm_with_front_layer=False):
+            group = None
+            pp_groups = para_ctx.get_pipeline_model_parallel_group()
+            for pp_group in pp_groups:
+                if rank in torch.distributed.get_process_group_ranks(pp_group):
+                    group = pp_group
+                    break
+            _, output_tensor_grad, _ = _communicate(
+                tensor_send_next=output_tensor,
+                tensor_send_prev=None,
+                recv_prev=False,
+                recv_next=True,
+                tensor_shape=tensor_shape,
+                config=config,
+                group=group,
+            )
+        else:
+            tensor_slices = para_ctx.get_inter_mesh_tensor_slices_tp_cp(
+                rank=rank, local_tensor_shape=output_tensor.shape, next=True
+            )
+            output_tensor_grad = torch.empty(tensor_shape,
+                                        device=torch.cuda.current_device(),
+                                        dtype=config.pipeline_dtype,
+                                        requires_grad=True)
+            if tensor_slices is not None:
+                for tensor_slice in tensor_slices:
+                    dst_rank, (dp_start, dp_end), sp_start_end_lst, local_hidden_size = tensor_slice
+
+                    # Merge the sent data
+                    all_output_tensor_sliced = []
+                    for sp_start, sp_end in sp_start_end_lst:
+                        output_tensor_sliced = output_tensor[sp_start:sp_end, dp_start:dp_end, :]
+                        all_output_tensor_sliced.append(output_tensor_sliced)
+                    output_tensor_concatenated = torch.cat(all_output_tensor_sliced, dim=0)
+
+                    # Merge the received data shape
+                    recv_sp_len = 0
+                    for sp_start, sp_end in sp_start_end_lst:
+                        recv_sp_len += sp_end - sp_start
+                    tensor_shape_sliced = (recv_sp_len, dp_end - dp_start, local_hidden_size)
+
+                    group = None
+                    pp_groups = para_ctx.get_pipeline_model_parallel_group()
+                    for pp_group in pp_groups:
+                        pp_group_ranks = torch.distributed.get_process_group_ranks(pp_group)
+                        if rank in pp_group_ranks and dst_rank in pp_group_ranks:
+                            group = pp_group
+                            break
+                    _, output_tensor_grad_sliced, _ = _communicate(
+                        tensor_send_next=output_tensor_concatenated,
+                        tensor_send_prev=None,
+                        recv_prev=False,
+                        recv_next=True,
+                        tensor_shape=tensor_shape_sliced,
+                        config=config,
+                        group=group,
+                    )
+
+                    start_index = 0
+                    for sp_start, sp_end in sp_start_end_lst:
+                        slice_length = sp_end - sp_start
+                        sliced_part = output_tensor_grad_sliced[start_index: start_index + slice_length, :, :]
+                        output_tensor_grad.data[sp_start:sp_end, dp_start:dp_end, :] = sliced_part
+                        start_index += slice_length
+        if config.timers is not None:
+            config.timers('forward-send-backward-recv').stop()
+    return output_tensor_grad
+
+
+def send_backward_recv_forward_hetero(
+        input_tensor_grad: torch.Tensor, tensor_shape: Shape, config: ModelParallelConfig
+) -> torch.Tensor:
+    """Batched send and recv with previous rank in pipeline.
+
+    See _communicate for argument details.
+    """
+
+    if core.parallel_state.is_pipeline_first_stage():
+        input_tensor = None
+    else:
+        if config.timers is not None:
+            config.timers('backward-send-forward-recv', log_level=2).start()
+        rank = torch.distributed.get_rank()
+        para_ctx = get_parallel_context()
+        if not is_inter_mesh_comm(para_ctx=para_ctx, comm_with_front_layer=True):
+            group = None
+            pp_groups = para_ctx.get_pipeline_model_parallel_group()
+            for pp_group in pp_groups:
+                if rank in torch.distributed.get_process_group_ranks(pp_group):
+                    group = pp_group
+                    break
+            input_tensor, _, _ = _communicate(
+                tensor_send_next=None,
+                tensor_send_prev=input_tensor_grad,
+                recv_prev=True,
+                recv_next=False,
+                tensor_shape=tensor_shape,
+                config=config,
+                group=group,
+            )
+        else:
+            tensor_slices = para_ctx.get_inter_mesh_tensor_slices_tp_cp(
+                rank=rank, local_tensor_shape=input_tensor_grad.shape, next=False
+            )
+            input_tensor = torch.empty(tensor_shape,
+                                       device=torch.cuda.current_device(),
+                                       dtype=config.pipeline_dtype,
+                                       requires_grad=True)
+            if tensor_slices is not None:
+                for tensor_slice in tensor_slices:
+                    dst_rank, (dp_start, dp_end), sp_start_end_lst, local_hidden_size = tensor_slice
+
+                    # Merge the sent data
+                    all_input_tensor_grad_sliced = []
+                    for sp_start, sp_end in sp_start_end_lst:
+                        input_tensor_grad_sliced = input_tensor_grad[sp_start:sp_end, dp_start:dp_end, :]
+                        all_input_tensor_grad_sliced.append(input_tensor_grad_sliced)
+                    input_tensor_grad_concatenated = torch.cat(all_input_tensor_grad_sliced, dim=0)
+
+                    # Merge the received data shape
+                    recv_sp_len = 0
+                    for sp_start, sp_end in sp_start_end_lst:
+                        recv_sp_len += sp_end - sp_start
+                    tensor_shape_sliced = (recv_sp_len, dp_end - dp_start, local_hidden_size)
+
+                    group = None
+                    pp_groups = para_ctx.get_pipeline_model_parallel_group()
+                    for pp_group in pp_groups:
+                        pp_group_ranks = torch.distributed.get_process_group_ranks(pp_group)
+                        if rank in pp_group_ranks and dst_rank in pp_group_ranks:
+                            group = pp_group
+                            break
+                    input_tensor_sliced, _, _ = _communicate(
+                        tensor_send_next=None,
+                        tensor_send_prev=input_tensor_grad_concatenated,
+                        recv_prev=True,
+                        recv_next=False,
+                        tensor_shape=tensor_shape_sliced,
+                        config=config,
+                        group=group,
+                    )
+                    
+                    start_index = 0
+                    for sp_start, sp_end in sp_start_end_lst:
+                        slice_length = sp_end - sp_start
+                        sliced_part = input_tensor_sliced[start_index:start_index + slice_length, :, :]
+                        input_tensor.data[sp_start:sp_end, dp_start:dp_end, :] = sliced_part
+                        start_index += slice_length
+        if config.timers is not None:
+            config.timers('backward-send-forward-recv').stop()
+    return input_tensor

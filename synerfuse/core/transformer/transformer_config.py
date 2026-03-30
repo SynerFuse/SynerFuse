@@ -186,6 +186,15 @@ class TransformerConfig(ModelParallelConfig):
     the number of transformer layers to recompute within each pipeline stage.  Must be None for
     'selective' activation checkpointing."""
 
+    recompute_granularity_per_stage: list = None
+    """Same as recompute_granularity but for each stage."""
+
+    recompute_method_per_stage: list = None
+    """Same as recompute_method but for each stage."""
+
+    recompute_num_layers_per_stage: list = None
+    """Same as recompute_num_layers but for each stage."""
+
     distribute_saved_activations: bool = None
     """If True, distribute recomputed activations across the model parallel group."""
 
@@ -286,6 +295,9 @@ class TransformerConfig(ModelParallelConfig):
 
     enable_cuda_graph: bool = False
     """When set to true, TransformerLayer blocks are wrapped with CUDA graph."""
+
+    config_logger_dir: str = ""
+    """When non-empty, dumps entry-point configs to config_logger_dir"""
 
     def __post_init__(self):
         """Python dataclass method that is used to modify attributes after initialization.

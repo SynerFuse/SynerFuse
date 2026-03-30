@@ -35,7 +35,7 @@ from synerfuse.training import (
     get_adlr_autoresume,
 )
 from synerfuse.core import DistributedDataParallel as DDP
-from synerfuse.core import mpu
+from synerfuse.core import mpu, parallel_state
 from synerfuse.core.tensor_parallel import param_is_not_tensor_parallel_duplicate
 from synerfuse.legacy.model import Float16Module
 from synerfuse.legacy.model.module import param_is_not_shared
@@ -249,7 +249,7 @@ def get_batch_on_this_cp_rank(batch):
     # and chunk_3 are assigned to GPU0, chunk_1 and chunk_2 are assigned to GPU1, so
     # that we can get balanced workload among GPUs in a context parallel group.
     args = get_args()
-    cp_size = args.context_parallel_size
+    cp_size = parallel_state.get_context_parallel_world_size()
     if cp_size > 1:
         cp_rank = mpu.get_context_parallel_rank()
         for key, val in batch.items():
