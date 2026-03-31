@@ -9,6 +9,7 @@ import torch.nn.functional as F
 
 from ..model_parallel_config import ModelParallelConfig
 from ..utils import init_method_normal, scaled_init_method_normal
+from synerfuse.core import parallel_state
 
 
 @dataclass
@@ -333,7 +334,7 @@ class TransformerConfig(ModelParallelConfig):
         if self.apply_query_key_layer_scaling:
             self.attention_softmax_in_fp32 = True
 
-        if self.expert_model_parallel_size > 1 and self.num_moe_experts is None:
+        if parallel_state.get_expert_model_parallel_world_size() > 1 and self.num_moe_experts is None:
             raise ValueError(f'num_moe_experts must be non None to use expert-parallel.')
 
         if self.num_moe_experts is not None and self.num_moe_experts <= 0:
@@ -449,7 +450,7 @@ class TransformerConfig(ModelParallelConfig):
                 raise ValueError(
                     "Moe extended TP parallelism only applies to allgather based token dispatcher."
                 )
-            extended_tp_size = self.tensor_model_parallel_size * self.expert_model_parallel_size
+            extended_tp_size = self.tensor_model_parallel_size * parallel_state.get_expert_model_parallel_world_size()
             if self.ffn_hidden_size % extended_tp_size != 0:
                 raise ValueError(
                     f'ffn_hidden_size: {self.ffn_hidden_size} must be divisible by extended_tp_size {extended_tp_size}'

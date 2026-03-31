@@ -19,6 +19,7 @@ from synerfuse.core.models.retro.utils import (
 )
 from synerfuse.core.transformer import TransformerConfig
 from synerfuse.training.activations import squared_relu
+from synerfuse.core import parallel_state
 
 
 def parse_args(extra_args_provider=None, ignore_unknown_args=False):
@@ -778,7 +779,7 @@ def validate_args(args, defaults={}):
         assert not args.use_legacy_models, "Context parallelism is not supported in legacy models."
 
     # Expert parallelism check
-    if args.expert_model_parallel_size  > 1:
+    if parallel_state.get_expert_model_parallel_world_size() > 1:
         assert args.num_experts is not None, "num_experts must be non None to use expert model parallelism"
         assert args.num_experts % args.expert_model_parallel_size == 0, \
             "Number of experts should be a multiple of expert model parallel_size."

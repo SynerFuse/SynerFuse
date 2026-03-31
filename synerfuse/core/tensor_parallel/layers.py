@@ -24,6 +24,7 @@ from synerfuse.core.parallel_state import (
     get_tensor_model_parallel_rank,
     get_tensor_model_parallel_world_size,
 )
+from synerfuse.core import parallel_state
 
 from ..dist_checkpointing.mapping import ShardedStateDict
 from ..transformer.utils import make_sharded_tensors_for_checkpoint
@@ -708,7 +709,7 @@ class ColumnParallelLinear(torch.nn.Module):
         # Divide the weight matrix along the last dimension.
         self.skip_bias_add = skip_bias_add
         self.is_expert = is_expert
-        self.expert_parallel = config.expert_model_parallel_size > 1
+        self.expert_parallel = parallel_state.get_expert_model_parallel_world_size() > 1
         self.embedding_activation_buffer = embedding_activation_buffer
         self.grad_output_buffer = grad_output_buffer
         self.config = config
@@ -981,7 +982,7 @@ class RowParallelLinear(torch.nn.Module):
         self.skip_bias_add = skip_bias_add
         self.config = config
         self.is_expert = is_expert
-        self.expert_parallel = config.expert_model_parallel_size > 1
+        self.expert_parallel = parallel_state.get_expert_model_parallel_world_size() > 1
         self.gradient_accumulation_fusion = config.gradient_accumulation_fusion
         self.sequence_parallel = config.sequence_parallel
         if self.sequence_parallel and not self.input_is_parallel:

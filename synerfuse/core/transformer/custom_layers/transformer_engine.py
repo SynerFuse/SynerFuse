@@ -606,7 +606,7 @@ if _te_version >= packaging.version.Version("1.9.0.dev0"):
             extra_kwargs = _get_extra_te_kwargs(config)
             extra_kwargs["ub_name"] = tp_comm_buffer_name
 
-            self.expert_parallel = self.config.expert_model_parallel_size > 1
+            self.expert_parallel = parallel_state.get_expert_model_parallel_world_size() > 1
             if self.expert_parallel:
                 extra_kwargs["rng_tracker_name"] = get_expert_parallel_rng_tracker_name()
 

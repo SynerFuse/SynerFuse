@@ -333,7 +333,9 @@ def get_megatron_optimizer(
     moe_param_groups = list(filter(lambda g: g['is_expert_parallel'], param_groups))
 
     # Create optimizers.
-    model_parallel_rank = torch.distributed.get_rank(mpu.get_model_parallel_group())
+    mp_group = mpu.get_model_parallel_group()
+    mp_group = [mp_group] if not isinstance(mp_group, list) else mp_group
+    model_parallel_rank = torch.distributed.get_rank(mp_group[0])
     optimizers = [
         _get_megatron_optimizer_based_on_param_groups(
             config,
@@ -346,7 +348,11 @@ def get_megatron_optimizer(
         )
     ]
     if len(moe_param_groups) > 0:
-        model_parallel_world_size = torch.distributed.get_world_size(mpu.get_model_parallel_group())
+        expert_mp_group = mpu.get_model_parallel_group()
+        if not isinstance(expert_mp_group, list):
+            model_parallel_world_size = torch.distributed.get_world_size(expert_mp_group)
+        else:
+            model_parallel_world_size = torch.distributed.get_world_size(expert_mp_group[0])
         expert_parallel_rank = mpu.get_expert_model_parallel_rank()
         optimizers.append(
             _get_megatron_optimizer_based_on_param_groups(

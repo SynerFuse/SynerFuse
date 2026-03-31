@@ -116,7 +116,7 @@ class MoEAllGatherTokenDispatcher(MoETokenDispatcher):
 
         # Permute the tokens across the expert parallel devices.
         if (self.config.tensor_model_parallel_size > 1) or (
-            self.config.expert_model_parallel_size > 1
+            parallel_state.get_expert_model_parallel_world_size() > 1
         ):
             with torch.no_grad():
                 global_indices = tensor_parallel.gather_from_sequence_parallel_region_to_moe(
@@ -229,7 +229,7 @@ class MoEAllGatherTokenDispatcher(MoETokenDispatcher):
 
         # Unpermute the tokens across expert parallel devices.
         if (self.config.tensor_model_parallel_size > 1) or (
-            self.config.expert_model_parallel_size > 1
+            parallel_state.get_expert_model_parallel_world_size() > 1
         ):
             assert (
                 self.global_local_map is not None
@@ -334,7 +334,7 @@ class MoEAlltoAllTokenDispatcher(MoETokenDispatcher):
             ), "local_expert_indices must be continous"
         self.router_topk = config.moe_router_topk
         self.add_bias = config.add_bias_linear
-        self.ep_size = config.expert_model_parallel_size
+        self.ep_size = parallel_state.get_expert_model_parallel_world_size()
         self.probs = None
         self.input_splits = None
         self.output_splits = None
@@ -370,7 +370,7 @@ class MoEAlltoAllTokenDispatcher(MoETokenDispatcher):
         num_local_tokens_per_expert = torch.bincount(indices.view(-1), minlength=self.num_experts)
         # num_local_tokens_per_expert: [num_experts]
 
-        ep_size = self.config.expert_model_parallel_size
+        ep_size = parallel_state.get_expert_model_parallel_world_size()
         if self.drop_and_pad:
             # probs: [num_experts, capacity]
             self.capacity = self.probs.size(1)
