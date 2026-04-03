@@ -48,7 +48,7 @@ class GroupedMLP(MegatronModule):
             config.add_bias_linear == False
         ), "bias in the expert layer is not supported in Grouped GEMM yet, please set '--disable-bias-linear' instead."
 
-        self.expert_parallel = config.expert_model_parallel_size > 1
+        self.expert_parallel = parallel_state.get_expert_model_parallel_world_size() > 1
         if self.config.gated_linear_unit:
             if self.config.activation_func not in (F.silu, F.gelu):
                 raise ValueError("Activation function must be silu or gelu when using GroupedMLP.")

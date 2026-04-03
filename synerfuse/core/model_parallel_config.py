@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Callable, ContextManager, Optional, List
 
 import torch
+from synerfuse.core import parallel_state
 
 
 @dataclass
@@ -358,7 +359,7 @@ class ModelParallelConfig:
                 "Wgrad deferral limit should be greater than or equal to 0 when this optimization is enabled!"
             )
 
-        if self.expert_model_parallel_size > 1 and self.tensor_model_parallel_size > 1:
+        if parallel_state.get_expert_model_parallel_world_size() > 1 and self.tensor_model_parallel_size > 1:
             if self.sequence_parallel is False:
                 raise ValueError(
                     "When using expert parallelism and tensor parallelism, sequence parallelism must be used"
