@@ -840,7 +840,7 @@ def initialize_model_parallel(
             _DATA_MODULO_EXPERT_PARALLEL_GROUP_WITH_CP = group
             _DATA_MODULO_EXPERT_PARALLEL_GROUP_WITH_CP_GLOO = group_gloo
 
-    # 打印通信组的划分情况
+    # ′òó?í¨D?×éμ???·??é??
     if rank == 0:
         print("comm groups: ")
         print("tp groups: ", tp_groups)
@@ -894,8 +894,7 @@ def get_model_parallel_group(with_expert_parallel=False):
     """Get the model parallel group the caller rank belongs to."""
     para_ctx = get_parallel_context()
     if para_ctx is not None:
-        groups = para_ctx.get_model_parallel_group(with_expert_parallel)
-        return groups[0]
+        return para_ctx.get_model_parallel_group(with_expert_parallel)
     if with_expert_parallel:
         assert (
             _MODEL_AND_EXPERT_PARALLEL_GROUP is not None
@@ -921,8 +920,7 @@ def get_pipeline_model_parallel_group():
     """Get the pipeline model parallel group the caller rank belongs to."""
     para_ctx = get_parallel_context()
     if para_ctx is not None:
-        groups = para_ctx.get_pipeline_model_parallel_group()
-        return groups[0]
+        return para_ctx.get_pipeline_model_parallel_group()
     assert (
         _PIPELINE_MODEL_PARALLEL_GROUP is not None
     ), 'pipeline_model parallel group is not initialized'

@@ -87,16 +87,27 @@ def get_segment_indices(length, n, i):
     return start, end
 
 
-def find_overlapped_mapping_tp_cp(sequnce_mesh1, sequnce_mesh2, global_size=None, sequence_parallel=True, cp_size1=2):
+def find_overlapped_mapping_tp_cp(sequence_mesh1, sequence_mesh2, global_size=None, sequence_parallel=True, cp_size1=2, tp_size1=None, tp_size2=None):
     overlapped_mapping = {}
-    for src_sp_dim, src_data in sequnce_mesh1.items():
+    tp_overlapped_mapping = None
+    if not sequence_parallel and tp_size1 is not None and tp_size2 is not None:
+        tp_overlapped_mapping = find_overlapped_mapping(tp_size1, tp_size2)
+        
+    for src_sp_dim, src_data in sequence_mesh1.items():
         overlapped_mapping[src_sp_dim] = []
 
         elem_to_src_sp_dim = defaultdict(list)
         for index, value in enumerate(src_data):
             elem_to_src_sp_dim[value].append(index)    
 
-        for dst_sp_dim, dst_data in sequnce_mesh2.items():
+        for dst_sp_dim, dst_data in sequence_mesh2.items():
+            if tp_overlapped_mapping is not None:
+                src_tp = src_sp_dim % tp_size1
+                dst_tp = dst_sp_dim % tp_size2
+                valid_dst_tps = [dim for dim, _, _ in tp_overlapped_mapping[src_tp]]
+                if dst_tp not in valid_dst_tps:
+                    continue
+
             common_elements = list(set(src_data) & set(dst_data))
             if common_elements:
                 common_elements.sort()
@@ -105,12 +116,12 @@ def find_overlapped_mapping_tp_cp(sequnce_mesh1, sequnce_mesh2, global_size=None
                     cur_index = elem_to_src_sp_dim[elem][0]
                     if sequence_parallel:
                         local_overlap_start, local_overlap_end = get_segment_indices(
-                            global_size//len(sequnce_mesh1.keys()), len(src_data), cur_index)
+                            global_size//len(sequence_mesh1.keys()), len(src_data), cur_index)
                     else:
                         local_overlap_start, local_overlap_end = get_segment_indices(
                             global_size // cp_size1, len(src_data), cur_index)
                     cur_overlap_start_end_lst.append([local_overlap_start, local_overlap_end])
-                # 连续区间合并
+                # á?D?????o?2￠
                 # merged_overlap_start_end_lst = [cur_overlap_start_end_lst[0]]
                 # for current in cur_overlap_start_end_lst:
                 #     last = merged_overlap_start_end_lst[-1]
@@ -624,30 +635,39 @@ class ParallelContext:
             chunks = math.lcm(tp1*cp1*2, tp2*cp2*2)
         else:
             chunks = math.lcm(cp1*2, cp2*2)
-        # key: tp_rank + cp_rank * tp_size, value: 分配数据 
-        sequnce_mesh1 = self.distribute_data(tp1, cp1, chunks, sequence_parallel=self._args.sequence_parallel)
-        sequnce_mesh2 = self.distribute_data(tp2, cp2, chunks, sequence_parallel=self._args.sequence_parallel)
-
+        # key: tp_rank + cp_rank * tp_size, value: ·???êy?Y 
+        sequence_mesh1 = self.distribute_data(tp1, cp1, chunks, sequence_parallel=self._args.sequence_parallel)
+        sequence_mesh2 = self.distribute_data(tp2, cp2, chunks, sequence_parallel=self._args.sequence_parallel)
         if self._args.sequence_parallel:
-            sp_overlapped_mapping = find_overlapped_mapping_tp_cp(sequnce_mesh1, sequnce_mesh2, global_size=chunks, sequence_parallel=True)
+            sp_overlapped_mapping = find_overlapped_mapping_tp_cp(sequence_mesh1, sequence_mesh2, global_size=chunks, sequence_parallel=True)
         else:
             # without sequence_parallel
-            sp_overlapped_mapping = find_overlapped_mapping_tp_cp(sequnce_mesh1, sequnce_mesh2, global_size=chunks, sequence_parallel=False, cp_size1=cp1)
+            sp_overlapped_mapping = find_overlapped_mapping_tp_cp(sequence_mesh1, sequence_mesh2, global_size=chunks, sequence_parallel=False, cp_size1=cp1, tp_size1=tp1, tp_size2=tp2)
         dp_overlapped_mapping = find_overlapped_mapping(dp1, dp2)
-
+        tp_overlapped_mapping = None
+        if not self._args.sequence_parallel:
+            tp_overlapped_mapping = find_overlapped_mapping(tp1, tp2)
+            
         src_pp_dims = [process_mesh1.get_parallel_size("pp") - 1]
         dst_pp_dims = [0]
-
-
         for src_sp_dim in sp_overlapped_mapping.keys():
             src_tp_rank, src_cp_rank = src_sp_dim % tp1, src_sp_dim // tp1
-
             for src_dp_dim in range(dp1):
                 src_coord = [src_tp_rank, src_cp_rank, src_dp_dim, src_pp_dims[0]]
-                dst_sp_dims = [c for c, _    in sp_overlapped_mapping[src_sp_dim]]
+                
+                valid_dst_sp_dims = []
+                for dim, _ in sp_overlapped_mapping[src_sp_dim]:
+                    if not self._args.sequence_parallel and tp_overlapped_mapping is not None:
+                        src_tp_i = src_sp_dim % tp1
+                        dst_tp_i = dim % tp2
+                        valid_dst_tps = [t for t, _, _ in tp_overlapped_mapping[src_tp_i]]
+                        if dst_tp_i not in valid_dst_tps:
+                            continue
+                    valid_dst_sp_dims.append(dim)
+
                 dst_dp_dims = [c for c, _, _ in dp_overlapped_mapping[src_dp_dim]]
                 dst_coords = list(
-                    itertools.product(dst_sp_dims, dst_dp_dims, dst_pp_dims)
+                    itertools.product(valid_dst_sp_dims, dst_dp_dims, dst_pp_dims)
                 )
                 src_rank = process_mesh1.logical_coords_to_physical_ranks(
                     [src_coord]
@@ -876,14 +896,13 @@ class ParallelContext:
             chunks = math.lcm(tp1*cp1*2, tp2*cp2*2)
         else:
             chunks = math.lcm(cp1*2, cp2*2)
-        # key: tp_rank + cp_rank * tp_size, value: 分配数据
-        sequnce_mesh1 = self.distribute_data(tp1, cp1, chunks, sequence_parallel=self._args.sequence_parallel)
-        sequnce_mesh2 = self.distribute_data(tp2, cp2, chunks, sequence_parallel=self._args.sequence_parallel)
-
+             # key: tp_rank + cp_rank * tp_size, value: ·???êy?Y
+        sequence_mesh1 = self.distribute_data(tp1, cp1, chunks, sequence_parallel=self._args.sequence_parallel)
+        sequence_mesh2 = self.distribute_data(tp2, cp2, chunks, sequence_parallel=self._args.sequence_parallel)
         if self._args.sequence_parallel:
-            sp_overlapped_mapping = find_overlapped_mapping_tp_cp(sequnce_mesh1, sequnce_mesh2, global_seq_len, sequence_parallel=True)
+            sp_overlapped_mapping = find_overlapped_mapping_tp_cp(sequence_mesh1, sequence_mesh2, global_seq_len, sequence_parallel=True)
         else:
-            sp_overlapped_mapping = find_overlapped_mapping_tp_cp(sequnce_mesh1, sequnce_mesh2, global_seq_len, sequence_parallel=False, cp_size1=cp1)
+            sp_overlapped_mapping = find_overlapped_mapping_tp_cp(sequence_mesh1, sequence_mesh2, global_seq_len, sequence_parallel=False, cp_size1=cp1, tp_size1=tp1, tp_size2=tp2)
         dp_overlapped_mapping = find_overlapped_mapping(dp1, dp2, global_batch_size)
         # find sp overlapped mapping
 
@@ -893,19 +912,19 @@ class ParallelContext:
             for src_dp_dim in range(dp1):
                 src_coord = [src_tp_rank, src_cp_rank, src_dp_dim, src_pp_dims[0]]
 
-                # --------构建当前src_sp_dim && src_dp_dim对应的所有坐标映射关系--------
-                # 当前src_sp_dim 对应的所有dst_sp_dim
+                # --------11?¨μ±?°src_sp_dim && src_dp_dim??ó|μ??ùóD×?±êó3é?1??μ--------
+                # μ±?°src_sp_dim ??ó|μ??ùóDdst_sp_dim
                 dst_sp_dims = [c for c, _    in sp_overlapped_mapping[src_sp_dim]]
-                # 当前src_dp_dim 对应的所有dst_dp_dim
+                # μ±?°src_dp_dim ??ó|μ??ùóDdst_dp_dim
                 dst_dp_dims = [c for c, _, _ in dp_overlapped_mapping[src_dp_dim]]
                 dst_coords = list(
                     itertools.product(dst_sp_dims, dst_dp_dims, dst_pp_dims)
                 )
 
-                # 每个元素：[(src_sp_start1, src_sp_end1), (src_sp_start2, src_sp_end2）,...]
-                # 在src_rank--->dst_rank通信时, src_rank发送的sequnce数据不连续, 因此会有多个段
+                # ?????a??￡o[(src_sp_start1, src_sp_end1), (src_sp_start2, src_sp_end2￡?,...]
+                # ?úsrc_rank--->dst_rankí¨D?ê±, src_rank·￠?íμ?sequnceêy?Y2?á?D?, òò′??áóD?à????
                 src_sp_start_and_end = [sp_overlap_start_end_lst for _, sp_overlap_start_end_lst in sp_overlapped_mapping[src_sp_dim]]
-                # 每个元素: (src_dp_start, src_dp_end)
+                # ?????a??: (src_dp_start, src_dp_end)
                 drc_dp_start_and_end = [(s, e) for _, s, e in dp_overlapped_mapping[src_dp_dim]]
 
                 sp_dp_pairs = list(itertools.product(src_sp_start_and_end, drc_dp_start_and_end))
@@ -969,14 +988,28 @@ class ParallelContext:
         global_batch_size = local_batch_size * dp1
         sp_overlapped_mapping = find_overlapped_mapping(sp1, sp2, global_seq_len)
         dp_overlapped_mapping = find_overlapped_mapping(dp1, dp2, global_batch_size)
+        tp_overlapped_mapping = None
+        if not self._args.sequence_parallel:
+            tp_overlapped_mapping = find_overlapped_mapping(tp1, tp2)
+            
         for s in range(sp1):
             src_i, src_j = s % tp1, s // tp1
             for k in range(dp1):
                 src_coord = [src_i, src_j, k, src_pp_dims[0]]
-                dst_sp_dims = [c for c, _, _ in sp_overlapped_mapping[s]]
+                
+                valid_dst_sp_dims = []
+                for dim, _, _ in sp_overlapped_mapping[s]:
+                    if not self._args.sequence_parallel and tp_overlapped_mapping is not None:
+                        src_tp_i = s % tp1
+                        dst_tp_i = dim % tp2
+                        valid_dst_tps = [t for t, _, _ in tp_overlapped_mapping[src_tp_i]]
+                        if dst_tp_i not in valid_dst_tps:
+                            continue
+                    valid_dst_sp_dims.append(dim)
+
                 dst_dp_dims = [c for c, _, _ in dp_overlapped_mapping[k]]
                 dst_coords = list(
-                    itertools.product(dst_sp_dims, dst_dp_dims, dst_pp_dims)
+                    itertools.product(valid_dst_sp_dims, dst_dp_dims, dst_pp_dims)
                 )
                 src_sp_starts = [s for _, s, _ in sp_overlapped_mapping[s]]
                 src_dp_starts = [s for _, s, _ in dp_overlapped_mapping[k]]
