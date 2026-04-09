@@ -1367,6 +1367,7 @@ def forward_backward_pipelining_without_interleaving(
         input_tensors = []
         output_tensors = []
     forward_data_store = []
+    p2p_communication.warm_up_comm_group(config=config)
 
     # Run warmup forward passes.
     for i in range(num_warmup_microbatches):

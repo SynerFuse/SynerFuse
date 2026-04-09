@@ -155,6 +155,81 @@ def validate_args(args, defaults={}):
     # Load saved args from Retro (if applicable).
     load_retro_args(args)
 
+    if args.enable_hetero:
+        assert (
+            args.hetero_process_meshes is not None
+        ), "hetero_process_meshes should be specified when enable_hetero is True"
+        assert (
+            len(args.hetero_process_meshes) % 5 == 0
+        ), f"length of hetero_process_meshes {args.hetero_process_meshes} should be divisible by 5, the format should be tp0, cp0, ep0, dp0, pp0, tp1, cp1, ep1, dp1, pp1, ..."
+        hetero_process_meshes_tp = args.hetero_process_meshes[0::5]
+        hetero_process_meshes_cp = args.hetero_process_meshes[1::5]
+        hetero_process_meshes_ep = args.hetero_process_meshes[2::5]
+        hetero_process_meshes_dp = args.hetero_process_meshes[3::5]
+        hetero_process_meshes_pp = args.hetero_process_meshes[4::5]
+
+        # Context parallel size
+        for context_parallel_size in hetero_process_meshes_cp:
+            if args.seq_length is not None and context_parallel_size > 1:
+                assert args.seq_length % (context_parallel_size * 2) == 0, \
+                    'seq-length should be a multiple of 2 * context-parallel-size ' \
+                    'if context-parallel-size > 1.'
+            if context_parallel_size > 1:
+                assert not args.use_legacy_models, "Context parallelism is not supported in legacy models."
+            if args.use_tp_pp_dp_mapping:
+                assert context_parallel_size * args.expert_model_parallel_size <= 1, \
+                    "context_parallel and expert_model_parallel can't be used with tp-pp-dp mapping."
+
+        # Data parallel size
+        args.data_parallel_size = hetero_process_meshes_dp[0]
+        assert all(
+            args.data_parallel_size * args.micro_batch_size % hetero_dp == 0
+            for hetero_dp in hetero_process_meshes_dp
+        ), f"data_parallel_size * micro_batch_size {args.data_parallel_size * args.micro_batch_size} should be divisible by all hetero_process_meshes_dp {hetero_process_meshes_dp}!"
+        # NOTE: Ep size should all be 1 or all be not 1
+        assert all(1 == hetero_ep for hetero_ep in hetero_process_meshes_ep) or any(
+            1 != hetero_ep for hetero_ep in hetero_process_meshes_ep
+        ), f"all hetero_process_meshes_ep {hetero_process_meshes_ep} should be the 1 or none of hetero_process_meshes_ep is not 1!"
+        # Pipeline model parallel size
+        assert args.pipeline_model_parallel_size == sum(hetero_process_meshes_pp), \
+            f"pipeline_model_parallel_size {args.pipeline_model_parallel_size} should match sum of hetero_process_meshes_pp {hetero_process_meshes_pp}!"
+        assert args.standalone_embedding_stage == False, \
+            'standalone not supported with process_meshes set!'
+        assert args.pipeline_model_parallel_split_rank == None, \
+            'pipeline_model_parallel_split_rank not supported with process_meshes set!'
+        args.transformer_pipeline_model_parallel_size = args.pipeline_model_parallel_size
+        # Virtual parallel size.
+        assert args.num_layers_per_virtual_pipeline_stage == None, \
+            'virtual pipeline not support now!'
+
+        # Sequence parallel
+        if all(tp_size == 1 for tp_size in hetero_process_meshes_tp):
+            args.sequence_parallel = False
+        # Model layer splits
+        if args.hetero_pipeline_stages is not None:
+            if args.hetero_pipeline_layer_split is not None:
+                raise ValueError("Cannot set both hetero_pipeline_stages and hetero_pipeline_layer_split simultaneously.")
+            else:
+                pass
+        elif args.hetero_pipeline_layer_split is None:
+            num_layers_per_pipeline_stage = (
+                args.num_layers // args.transformer_pipeline_model_parallel_size
+            )
+            args.hetero_pipeline_layer_split = [
+                num_layers_per_pipeline_stage
+            ] * args.pipeline_model_parallel_size
+        else:
+            assert (
+                sum(args.hetero_pipeline_layer_split) == args.num_layers
+            ), f"sum of hetero_pipeline_layer_split {args.hetero_pipeline_layer_split} should be equal to num_layers {args.num_layers}"
+            assert args.pipeline_model_parallel_size == len(
+                args.hetero_pipeline_layer_split
+            ), f"pipeline_model_parallel_size {args.pipeline_model_parallel_size} should be equal to the length of hetero_pipeline_layer_split {args.hetero_pipeline_layer_split}"
+        hetero_process_meshes = []
+        for i in range(0, len(args.hetero_process_meshes), 5):
+            hetero_process_meshes.append(args.hetero_process_meshes[i : i + 5])
+        args.hetero_process_meshes = hetero_process_meshes
+
     # Tensor model parallel size.
     args.tensor_model_parallel_size = min(
         args.tensor_model_parallel_size, args.world_size)
@@ -1998,7 +2073,18 @@ def _add_experimental_args(parser):
 
 def _add_hetero_args(parser):
     group = parser.add_argument_group(title="heterogeneous training")
-
+    group.add_argument('--enable-hetero', action="store_true",
+                       help='the mode of heterogeneous training')
+    group.add_argument('--hetero-device-types', nargs='*', type=str, default=None,
+                       help='the list of device types: device_type_0 device_type_1 ...')
+    group.add_argument('--hetero-current-device-type', type=str, default=None,
+                       help='the current device type')
+    group.add_argument('--hetero-pipeline-layer-split', nargs='*', type=int, default=None,
+                       help='Incompatible with --num-layers-per-virtual-pipeline-stage for now.'
+                       'hetero-pipeline-layer-split must be in the form: layers_0 layers_1 ... layers_n. The number of the list should be equal to pipeline-model-parallel-size.')
+    group.add_argument('--hetero-process-meshes', nargs='*', type=int, default=None,
+                       help='Use this arg to set TP-CP-EP-DP-PP of each process mesh.'
+                       'This argument must be in the form: TP0, CP0, EP0, DP0, PP0, TP1, CP1, EP1, DP1, PP1...TPN, CPN, EPN, DPN, PPN. CP and TP size can be different, sum of PP should match pipeline-model-parallel-size, DP size should be the same.')
     group.add_argument('--hetero-use-cpu-communication', action='store_true',
                        help='Use CPU for communication for heterogeneous communication.')
     group.add_argument('--micro-batch-size-per-dp', nargs='*', type=int, default=None,

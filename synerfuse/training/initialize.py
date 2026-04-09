@@ -21,6 +21,7 @@ from synerfuse.training.checkpointing import load_args_from_checkpoint
 from synerfuse.training.global_vars import set_global_variables
 from synerfuse.legacy.model.transformer import bias_dropout_add_fused_train
 from synerfuse.legacy.model.fused_bias_gelu import bias_gelu
+from synerfuse_hetero.train import set_parallel_context
 
 logger = logging.getLogger(__name__)
 
@@ -254,6 +255,9 @@ def _initialize_distributed():
     # Set the tensor model-parallel, pipeline model-parallel, and
     # data-parallel communicators.
     if device_count > 0:
+        if args.enable_hetero:
+            set_parallel_context(args)
+            return
         if mpu.model_parallel_is_initialized():
             print("model parallel is already initialized")
         else:

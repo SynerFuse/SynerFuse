@@ -75,16 +75,27 @@ def get_num_layers_to_build(config: TransformerConfig) -> int:
     else:
         # Non-interleaved pipeline parallelism:
         # Each stage gets a contiguous set of layers.
-        if config.num_layers_per_stage is not None:
-            pipeline_rank = parallel_state.get_pipeline_model_parallel_rank()
-            num_layers_to_build = config.num_layers_per_stage[pipeline_rank]
-        elif config.hetero_pipeline_stages is None:
-            num_layers_to_build = num_layers_per_pipeline_rank
+        if config.enable_hetero:
+            if config.hetero_pipeline_stages is not None and config.hetero_pipeline_layer_split is not None:
+                raise ValueError("Cannot set both hetero_pipeline_stages and hetero_pipeline_layer_split simultaneously.")
+            elif config.hetero_pipeline_layer_split is not None:
+                pipeline_rank = parallel_state.get_pipeline_model_parallel_rank()
+                num_layers_to_build = config.hetero_pipeline_layer_split[pipeline_rank]
+            elif config.hetero_pipeline_stages is not None:
+                pipeline_rank = parallel_state.get_pipeline_model_parallel_rank()
+                pipeline_stages = [item for sublist in config.hetero_pipeline_stages for item in sublist]
+                num_layers_to_build = pipeline_stages[pipeline_rank]
+                torch.distributed.barrier()
+            else:
+                num_layers_to_build = num_layers_per_pipeline_rank
         else:
-            pipeline_rank = parallel_state.get_pipeline_model_parallel_rank()
-            pipeline_stages = [item for sublist in config.hetero_pipeline_stages for item in sublist]
-            num_layers_to_build = pipeline_stages[pipeline_rank]
-            torch.distributed.barrier()
+            if config.hetero_pipeline_stages is None:
+                num_layers_to_build = num_layers_per_pipeline_rank
+            else:
+                pipeline_rank = parallel_state.get_pipeline_model_parallel_rank()
+                pipeline_stages = [item for sublist in config.hetero_pipeline_stages for item in sublist]
+                num_layers_to_build = pipeline_stages[pipeline_rank]
+                torch.distributed.barrier()
 
     return num_layers_to_build
 
