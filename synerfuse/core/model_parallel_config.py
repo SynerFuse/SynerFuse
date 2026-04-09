@@ -22,6 +22,9 @@ class ModelParallelConfig:
     pipeline_model_parallel_size: int = 1
     """Inter-layer model parallelism. Splits transformer layers across GPU ranks."""
 
+    num_layers_per_stage: Optional[List[int]] = None
+    """Number of layers per pipeline stage."""
+
     virtual_pipeline_model_parallel_size: Optional[int] = None
     """Interleaved pipeline parallelism is used to improve performance by reducing the pipeline
        bubble.  Considers a transformer block as a list of smaller transformer (virtual) blocks.

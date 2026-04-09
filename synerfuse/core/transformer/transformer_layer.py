@@ -152,7 +152,9 @@ class TransformerLayer(MegatronModule, BaseTransformerLayer):
         else:
             # Each stage gets a contiguous set of layers.
             if parallel_state.get_pipeline_model_parallel_world_size() > 1:
-                if self.config.hetero_pipeline_stages is None:
+                if self.config.num_layers_per_stage is not None:
+                    offset = sum(self.config.num_layers_per_stage[:pipeline_rank])
+                elif self.config.hetero_pipeline_stages is None:
                     offset = pipeline_rank * num_layers_per_pipeline_rank
                 else:
                     pipeline_stages = [item for sublist in self.config.hetero_pipeline_stages for item in sublist]
