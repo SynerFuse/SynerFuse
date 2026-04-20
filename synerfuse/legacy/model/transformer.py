@@ -1340,8 +1340,9 @@ def _get_num_layers(args, model_type, is_decoder=False):
                 num_layers = args.decoder_num_layers // num_ranks_in_decoder
         else:
             assert args.num_layers == args.encoder_num_layers
-            assert args.num_layers % args.transformer_pipeline_model_parallel_size == 0, \
-                'num_layers must be divisible by transformer_pipeline_model_parallel_size'
+            if args.num_layers_per_stage is None:
+                assert args.num_layers % args.transformer_pipeline_model_parallel_size == 0, \
+                    'num_layers must be divisible by transformer_pipeline_model_parallel_size'
 
             # When a standalone embedding stage is used, all transformer layers
             # are divided among pipeline rank >= 1, while on pipeline rank 0,
@@ -1607,9 +1608,10 @@ class ParallelTransformer(MegatronModule):
                     **extra_transformer_engine_kwargs)
 
         if config.virtual_pipeline_model_parallel_size is not None:
-            assert config.num_layers % config.virtual_pipeline_model_parallel_size == 0, \
-                'num_layers_per_stage must be divisible by ' \
-                'virtual_pipeline_model_parallel_size'
+            if args.num_layers_per_stage is None:
+                assert config.num_layers % config.virtual_pipeline_model_parallel_size == 0, \
+                    'num_layers_per_stage must be divisible by ' \
+                    'virtual_pipeline_model_parallel_size'
             assert args.model_type != ModelType.encoder_and_decoder
             assert args.hetero_pipeline_stages is None, \
                 "Heterogenous pipeline parallelism is not supported for virtual pipeline model parallel."
@@ -1624,9 +1626,14 @@ class ParallelTransformer(MegatronModule):
             # layers to stages like (each list is a model chunk):
             # Stage 0: [0, 1]  [4, 5]
             # Stage 1: [2, 3]  [6, 7]
-            offset = mpu.get_virtual_pipeline_model_parallel_rank() * (
-                config.num_layers // config.virtual_pipeline_model_parallel_size) + \
-                (mpu.get_pipeline_model_parallel_rank() * self.num_layers)
+            if args.num_layers_per_stage is not None:
+                offset = mpu.get_virtual_pipeline_model_parallel_rank() * (
+                    config.num_layers // config.virtual_pipeline_model_parallel_size) + \
+                    sum(args.num_layers_per_stage[:mpu.get_pipeline_model_parallel_rank()])
+            else:
+                offset = mpu.get_virtual_pipeline_model_parallel_rank() * (
+                    config.num_layers // config.virtual_pipeline_model_parallel_size) + \
+                    (mpu.get_pipeline_model_parallel_rank() * self.num_layers)
         else:
             # Each stage gets a contiguous set of layers.
             if args.model_type == ModelType.encoder_and_decoder and \
@@ -1640,7 +1647,9 @@ class ParallelTransformer(MegatronModule):
                     num_ranks_in_enc = args.pipeline_model_parallel_split_rank
                     offset = (pipeline_rank - num_ranks_in_enc) * self.num_layers
             else:
-                if args.hetero_pipeline_stages is None:
+                if args.num_layers_per_stage is not None:
+                    offset = sum(args.num_layers_per_stage[:mpu.get_pipeline_model_parallel_rank()])
+                elif args.hetero_pipeline_stages is None:
                     offset = mpu.get_pipeline_model_parallel_rank() * self.num_layers
                 else:
                     offset, self.num_layers = _get_layer_info(args)

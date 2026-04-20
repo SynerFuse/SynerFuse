@@ -508,9 +508,12 @@ def validate_args(args, defaults={}):
                 'when interleaved schedule is used and p2p communication overlap is disabled, '\
                 'pipeline-model-parallel size should be greater than 2 to avoid having multiple '\
                 'p2p sends and recvs between same 2 ranks per communication batch'
-        assert args.num_layers % args.transformer_pipeline_model_parallel_size == 0, \
-            'number of layers should be divisible by the pipeline parallel size'
-        num_layers_per_pipeline_stage = args.num_layers // args.transformer_pipeline_model_parallel_size
+        if args.hetero_pipeline_stages is None:
+            assert args.num_layers % args.transformer_pipeline_model_parallel_size == 0, \
+                'number of layers should be divisible by the pipeline parallel size'
+            num_layers_per_pipeline_stage = args.num_layers // args.transformer_pipeline_model_parallel_size
+        else:
+            num_layers_per_pipeline_stage = None # Not used in hetero mode
         assert num_layers_per_pipeline_stage % args.num_layers_per_virtual_pipeline_stage == 0, \
             'number of layers per pipeline stage must be divisible number of layers per virtual pipeline stage'
         args.virtual_pipeline_model_parallel_size = num_layers_per_pipeline_stage // \
@@ -824,6 +827,30 @@ def validate_args(args, defaults={}):
         print('Warning: With non-parallel ckpt save and DistributedOptimizer,'
               ' it will be impossible to resume training with different parallelism.'
               ' Consider removing flag --no-ckpt-fully-parallel-save.')
+
+    # num_layers_per_stage
+    args.num_layers_per_stage = None
+    if args.hetero_pipeline_stages is not None:
+        args.num_layers_per_stage = []
+        # Handle both flat list [n0, l0, l1, n1, l2, l3] and nested list [[n0, l0, l1], [n1, l2, l3]]
+        if any(isinstance(x, list) for x in args.hetero_pipeline_stages):
+            for sublist in args.hetero_pipeline_stages:
+                if isinstance(sublist, list):
+                    # sublist is [n, l0, l1, ...]
+                    n = sublist[0]
+                    layers = sublist[1:1+n]
+                    args.num_layers_per_stage.extend(layers)
+                else:
+                    # This case should not happen with correct input but for robustness
+                    args.num_layers_per_stage.append(sublist)
+        else:
+            i = 0
+            while i < len(args.hetero_pipeline_stages):
+                n = args.hetero_pipeline_stages[i]
+                layers = args.hetero_pipeline_stages[i+1:i+1+n]
+                args.num_layers_per_stage.extend(layers)
+                i += (n + 1)
+        assert len(args.num_layers_per_stage) == args.pipeline_model_parallel_size
 
     # Print arguments.
     _print_args("arguments", args)
@@ -1157,7 +1184,7 @@ def _add_logging_args(parser):
                        help='Report to tensorboard interval.')
     group.add_argument('--tensorboard-queue-size', type=int, default=1000,
                        help='Size of the tensorboard queue for pending events '
-                       'and summaries before one of the ‘add’ calls forces a '
+                       'and summaries before one of the \'add\' calls forces a '
                        'flush to disk.')
     group.add_argument('--log-timers-to-tensorboard', action='store_true',
                        help='If set, write timers to tensorboard.')
@@ -2089,5 +2116,7 @@ def _add_hetero_args(parser):
                        help='used with recompute-granularity=full, setting recompute num layers '
                             'of each stage. This argument must be in the form: n0, layers0, n1, layers1, ...'
                             'the sum of n0, n1, ... should be equal to pipeline-model-parallel-size.')
+    group.add_argument('--recompute-modules', nargs='*', type=str, default=None,
+                       help='recompute modules')
 
     return parser
