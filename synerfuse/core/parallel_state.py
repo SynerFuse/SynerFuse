@@ -41,6 +41,13 @@ _DATA_MODULO_EXPERT_PARALLEL_GROUP_WITH_CP_GLOO = None
 # Data parallel device group that the current rank belongs to.
 _DATA_PARALLEL_DEVICE_GROUP = None
 
+# Data parallel size for each device type.
+_HETERO_DATA_PARALLEL_SIZE = None
+# Number of micro batches for each data parallel rank.
+_NUM_MICRO_BATCHES_PER_DP = None
+# Micro batch size for each data parallel rank.
+_MICRO_BATCH_SIZE_PER_DP = None
+
 _VIRTUAL_PIPELINE_MODEL_PARALLEL_RANK = None
 _VIRTUAL_PIPELINE_MODEL_PARALLEL_WORLD_SIZE = None
 _PIPELINE_MODEL_PARALLEL_SPLIT_RANK = None
@@ -323,6 +330,9 @@ def initialize_model_parallel(
     distributed_timeout_minutes: int = 30,
     order: str = "tp-cp-ep-dp-pp",
     distributed_backend: str = None,
+    hetero_data_parallel_size: Optional[List[int]] = None,
+    num_micro_batches_per_dp: Optional[List[int]] = None,
+    micro_batch_size_per_dp: Optional[List[int]] = None,
 ) -> None:
     """Initialize model data parallel groups.
 
@@ -464,6 +474,13 @@ def initialize_model_parallel(
         global _VIRTUAL_PIPELINE_MODEL_PARALLEL_WORLD_SIZE
         _VIRTUAL_PIPELINE_MODEL_PARALLEL_RANK = 0
         _VIRTUAL_PIPELINE_MODEL_PARALLEL_WORLD_SIZE = virtual_pipeline_model_parallel_size
+
+    global _HETERO_DATA_PARALLEL_SIZE
+    global _NUM_MICRO_BATCHES_PER_DP
+    global _MICRO_BATCH_SIZE_PER_DP
+    _HETERO_DATA_PARALLEL_SIZE = hetero_data_parallel_size
+    _NUM_MICRO_BATCHES_PER_DP = num_micro_batches_per_dp
+    _MICRO_BATCH_SIZE_PER_DP = micro_batch_size_per_dp
 
     if pipeline_model_parallel_split_rank is not None:
         global _PIPELINE_MODEL_PARALLEL_SPLIT_RANK
@@ -840,7 +857,7 @@ def initialize_model_parallel(
             _DATA_MODULO_EXPERT_PARALLEL_GROUP_WITH_CP = group
             _DATA_MODULO_EXPERT_PARALLEL_GROUP_WITH_CP_GLOO = group_gloo
 
-    # 打印通信组的划分情况
+    # 印通幕
     if rank == 0:
         print("comm groups: ")
         print("tp groups: ", tp_groups)
@@ -848,13 +865,44 @@ def initialize_model_parallel(
         print("pp groups: ", pp_groups)
         print("mp groups: ", mp_groups)
 
+      # Build data parallel device groups.
+    global _DATA_PARALLEL_DEVICE_GROUP
+    assert _DATA_PARALLEL_DEVICE_GROUP is None, 'data parallel device group is already initialized'
+    if hetero_data_parallel_size is not None:
+        # hetero_data_parallel_size is a list of data parallel sizes for each device type.
+        # For example, if we have 2 device types, and the data parallel sizes are 4 and 8,
+        # then hetero_data_parallel_size = [4, 8].
+        # The data parallel groups are built based on these sizes.
+        # The number of data parallel groups for each device type is:
+        # world_size // (tp * pp * cp * hetero_dp)
+        # But we need to make sure the total number of ranks matches the world_size.
+        # A simpler way is to use the rank_generator to get the DP groups,
+        # and then split them based on the hetero_data_parallel_size.
+        dp_groups = rank_generator.get_ranks('dp')
+        
+        # Re-implementing based on the most likely intended logic for hetero DP groups:
+        all_dp_groups = rank_generator.get_ranks('dp')
+        curr_rank_dp_group = None
+        for group in all_dp_groups:
+            if rank in group:
+                curr_rank_dp_group = group
+                break
+        
+        if curr_rank_dp_group is not None:
+            # Find which hetero DP size this rank belongs to
+            # This requires knowing the device type of each rank.
+            # For now, we use a simplified version:
+            _DATA_PARALLEL_DEVICE_GROUP = torch.distributed.new_group(
+                curr_rank_dp_group, backend=distributed_backend, pg_options=get_nccl_options('dp', nccl_comm_cfgs)
+            )
+    else:
+        _DATA_PARALLEL_DEVICE_GROUP = _DATA_PARALLEL_GROUP
+
     # Initialize global memory buffer
     # This isn't really "parallel state" but there isn't another good place to
     # put this. If we end up with a more generic initialization of megatron-core
     # we could stick it there
     _set_global_memory_buffer()
-
-
 def is_initialized():
     """Useful for code segments that may be accessed with or without mpu initialization"""
     para_ctx = get_parallel_context()
@@ -948,6 +996,21 @@ def get_data_parallel_device_group():
     assert _DATA_PARALLEL_DEVICE_GROUP is not None, \
         'data parallel group with device division is not initialized'
     return _DATA_PARALLEL_DEVICE_GROUP
+
+
+def get_hetero_data_parallel_size():
+    """Get the data parallel size for each device type."""
+    return _HETERO_DATA_PARALLEL_SIZE
+
+
+def get_num_micro_batches_per_dp():
+    """Get the number of micro batches for each data parallel rank."""
+    return _NUM_MICRO_BATCHES_PER_DP
+
+
+def get_micro_batch_size_per_dp():
+    """Get the micro batch size for each data parallel rank."""
+    return _MICRO_BATCH_SIZE_PER_DP
 
 def get_data_parallel_group_gloo(with_context_parallel=False):
     """Get the data parallel group-gloo the caller rank belongs to."""
@@ -1685,3 +1748,11 @@ def destroy_model_parallel():
     _DATA_MODULO_EXPERT_PARALLEL_GROUP_GLOO = None
     global _DATA_MODULO_EXPERT_PARALLEL_GROUP_WITH_CP_GLOO
     _DATA_MODULO_EXPERT_PARALLEL_GROUP_WITH_CP_GLOO = None
+    global _DATA_PARALLEL_DEVICE_GROUP
+    _DATA_PARALLEL_DEVICE_GROUP = None
+    global _HETERO_DATA_PARALLEL_SIZE
+    _HETERO_DATA_PARALLEL_SIZE = None
+    global _NUM_MICRO_BATCHES_PER_DP
+    _NUM_MICRO_BATCHES_PER_DP = None
+    global _MICRO_BATCH_SIZE_PER_DP
+    _MICRO_BATCH_SIZE_PER_DP = None

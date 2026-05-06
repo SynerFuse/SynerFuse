@@ -62,7 +62,7 @@ class Bucket:
         data_parallel_group: torch.distributed.ProcessGroup,
         data_parallel_world_size: int,
         gradient_scaling_factor: float,
-        num_micro_batches_gard_factor: float = 0,
+        num_micro_batches_grad_factor: float = 0,
     ):
         self.ddp_config = ddp_config
 
@@ -85,10 +85,10 @@ class Bucket:
         self.gradient_scaling_factor = gradient_scaling_factor
         # Scaling gradinents to reduce loss calculation error when using num micro batches per dp,
         # and it is similar to gradient_scaling_factor.
-        if num_micro_batches_gard_factor != 0:
-            self.num_micro_batches_gard_factor = num_micro_batches_gard_factor * self.data_parallel_world_size
+        if num_micro_batches_grad_factor != 0:
+            self.num_micro_batches_grad_factor = num_micro_batches_grad_factor * self.data_parallel_world_size
         else:
-            self.num_micro_batches_gard_factor = 0
+            self.num_micro_batches_grad_factor = 0
 
         self.reset()
 
@@ -136,8 +136,8 @@ class Bucket:
 
         # Gradients needs to be multiplied by the scaling factor when using num micro batches per dp,
         # in order to reduce loss calculation error.
-        if self.num_micro_batches_gard_factor != 0:
-            self.grad_data *= self.num_micro_batches_gard_factor
+        if self.num_micro_batches_grad_factor != 0:
+            self.grad_data *= self.num_micro_batches_grad_factor
 
         if "cpu:gloo" == torch.distributed.get_backend(group=self.data_parallel_group):
             self.grad_data = self.grad_data.cpu()
@@ -222,7 +222,7 @@ class ParamAndGradBuffer:
         gradient_scaling_factor: This factor is utilized to scale gradients prior to their
             communication. Its application is twofold: it facilitates the averaging of gradients
             and the scaling of gradients in the context of the Mixture of Experts (MoE) model.
-        num_micro_batches_gard_factor: This factor is utilized to avoid loss calculation error when 
+        num_micro_batches_grad_factor: This factor is utilized to avoid loss calculation error when 
             using num micro batches per dp, and its function is similar to gradient_scaling_factor.
     """
 
@@ -236,10 +236,10 @@ class ParamAndGradBuffer:
         bucket_size: int,
         param_to_name: Dict[torch.nn.Parameter, str],
         gradient_scaling_factor: float,
-        num_micro_batches_gard_factor: float = 0,
+        num_micro_batches_grad_factor: float = 0,
     ):
         self.ddp_config = ddp_config
-        self.num_micro_batches_gard_factor = num_micro_batches_gard_factor
+        self.num_micro_batches_grad_factor = num_micro_batches_grad_factor
 
         # Check that params are unique.
         unique_params = set()
@@ -257,6 +257,28 @@ class ParamAndGradBuffer:
         )
         self.gradient_scaling_factor = gradient_scaling_factor
         self.is_last_microbatch = True
+
+        if self.num_micro_batches_grad_factor != 0:
+            from ..parallel_state import (
+                get_data_parallel_rank,
+                get_num_micro_batches_per_dp,
+                get_micro_batch_size_per_dp,
+            )
+
+            dp_rank = get_data_parallel_rank()
+            num_micro_batches_per_dp = get_num_micro_batches_per_dp()
+            micro_batch_size_per_dp = get_micro_batch_size_per_dp()
+            if num_micro_batches_per_dp is not None:
+                self.num_micro_batches_per_dp = num_micro_batches_per_dp[dp_rank]
+            else:
+                self.num_micro_batches_per_dp = None
+            if micro_batch_size_per_dp is not None:
+                self.micro_batch_size_per_dp = micro_batch_size_per_dp[dp_rank]
+            else:
+                self.micro_batch_size_per_dp = None
+        else:
+            self.num_micro_batches_per_dp = None
+            self.micro_batch_size_per_dp = None
 
         # Data structures to store underlying buckets and relevant indexing data.
         self.buckets = []
@@ -516,7 +538,7 @@ class ParamAndGradBuffer:
             data_parallel_group=self.data_parallel_group,
             data_parallel_world_size=self.data_parallel_world_size,
             gradient_scaling_factor=self.gradient_scaling_factor,
-            num_micro_batches_gard_factor=self.num_micro_batches_gard_factor,
+            num_micro_batches_grad_factor=self.num_micro_batches_grad_factor,
         )
         self.buckets.append(bucket)
         for bucket_param in bucket_params:

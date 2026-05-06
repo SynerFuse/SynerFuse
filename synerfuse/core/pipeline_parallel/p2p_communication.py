@@ -13,6 +13,7 @@ from synerfuse.core.parallel_state import (
     get_pipeline_model_parallel_prev_rank,
     get_pipeline_model_parallel_rank,
     get_pipeline_model_parallel_world_size,
+    get_data_parallel_device_group,
 )
 
 # Types
@@ -370,14 +371,17 @@ def _communicate(
             return []
 
         p2p_func = _ring_exchange_wrapper
-    elif config.batch_p2p_comm:
+    if config.batch_p2p_comm:
         assert wait_on_reqs
         p2p_func = _batched_p2p_ops
         # _batched_p2p_ops is not support for num micro batches per dp currently.
-        if config.num_micro_batches_gard_factor != 0:
+        if config.num_micro_batches_grad_factor != 0:
             p2p_func = _p2p_ops
     else:
         p2p_func = _p2p_ops
+
+    if config.num_micro_batches_grad_factor != 0:
+        group = get_data_parallel_device_group()
 
     # Each rank can now be part of several different pipeline parallel groups
     # (specifically, this can occur when encoder tensor parallelism != decoder

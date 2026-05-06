@@ -136,7 +136,7 @@ class DistributedDataParallel(MegatronModule):
                         self.bucket_size,
                         param_to_name,
                         gradient_scaling_factor,
-                        config.num_micro_batches_gard_factor
+                        config.num_micro_batches_grad_factor
                     )
                 )
                 for param in params:
@@ -159,16 +159,22 @@ class DistributedDataParallel(MegatronModule):
                 expert_gradient_scaling_factor = 1.0 / data_parallel_world_size
 
         # Allocate the param+grad buffers for dense params' grads.
+        data_parallel_group = parallel_state.get_data_parallel_group(with_context_parallel=True)
+        if config.num_micro_batches_grad_factor != 0:
+            data_parallel_group = parallel_state.get_data_parallel_device_group()
         self.buffers = allocate_buffers_for_parameters(
             dense_params,
-            parallel_state.get_data_parallel_group(with_context_parallel=True),
+            data_parallel_group,
             gradient_scaling_factor=gradient_scaling_factor,
         )
 
         # Allocate separate param+grad buffers for expert parallel params' grads.
+        expert_data_parallel_group = parallel_state.get_data_modulo_expert_parallel_group(with_context_parallel=True)
+        if config.num_micro_batches_grad_factor != 0:
+            expert_data_parallel_group = parallel_state.get_data_parallel_device_group()
         self.expert_parallel_buffers = allocate_buffers_for_parameters(
             expert_parallel_params,
-            parallel_state.get_data_modulo_expert_parallel_group(with_context_parallel=True),
+            expert_data_parallel_group,
             gradient_scaling_factor=expert_gradient_scaling_factor,
         )
 

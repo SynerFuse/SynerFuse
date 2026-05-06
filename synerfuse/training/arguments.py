@@ -912,9 +912,9 @@ def core_transformer_config_from_args(args, config_class=None):
     else:
         kw_args['num_query_groups'] = None
     if args.num_micro_batches_per_dp:
-        kw_args['num_micro_batches_gard_factor'] = args.num_micro_batches_grad_factor
+        kw_args['num_micro_batches_grad_factor'] = args.num_micro_batches_grad_factor
     else:
-        kw_args['num_micro_batches_gard_factor'] = 0
+        kw_args['num_micro_batches_grad_factor'] = 0
 
     # Return config.
     return config_class(**kw_args)
@@ -1472,7 +1472,8 @@ def _add_training_args(parser):
     group.add_argument('--disable-tp-comm-split-rs', action='store_false',
                        help='Disables the Reduce-Scatter overlap with fprop GEMM.',
                        dest='tp_comm_split_rs')
-
+    group.add_argument('--hetero-data-parallel-size', nargs='+', type=int, default=None,
+                       help='Data parallel size for each device type.')
     return parser
 
 

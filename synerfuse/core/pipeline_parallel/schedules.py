@@ -402,6 +402,7 @@ def forward_backward_no_pipelining(
     forward_only: bool = False,
     collect_non_loss_data: bool = False,
     first_val_step: bool = None,
+    num_micro_batches_grad_factor: float = 0,
 ):
     """Run forward and backward passes with no pipeline parallelism
     (no inter-stage communication).
@@ -537,6 +538,7 @@ def forward_backward_pipelining_with_interleaving(
     forward_only: bool = False,
     collect_non_loss_data: bool = False,
     first_val_step: bool = None,
+    num_micro_batches_grad_factor: float = 0,
 ):
     """Run interleaved 1F1B schedule (model split into model chunks), with
     communication between pipeline stages as needed.
@@ -1265,6 +1267,7 @@ def forward_backward_pipelining_without_interleaving(
     forward_only: bool = False,
     collect_non_loss_data: bool = False,
     first_val_step: bool = None,
+    num_micro_batches_grad_factor: float = 0,
 ):
     """Run non-interleaved 1F1B schedule, with communication between pipeline
     stages.

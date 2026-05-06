@@ -602,7 +602,8 @@ def train_step(forward_step_func, data_iterator,
         seq_length=args.seq_length,
         micro_batch_size=args.micro_batch_size,
         decoder_seq_length=args.decoder_seq_length,
-        forward_only=False)
+        forward_only=False,
+        num_micro_batches_grad_factor=args.num_micro_batches_grad_factor)
 
     # Empty unused memory.
     if args.empty_unused_memory_level >= 1:
@@ -1345,7 +1346,8 @@ def evaluate(forward_step_func,
                 seq_length=args.seq_length,
                 micro_batch_size=args.micro_batch_size,
                 decoder_seq_length=args.decoder_seq_length,
-                forward_only=True)
+                forward_only=True,
+                num_micro_batches_grad_factor=args.num_micro_batches_grad_factor)
             config.timers = get_timers()
 
             # Empty unused memory
