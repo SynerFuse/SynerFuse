@@ -108,9 +108,21 @@ class FSTrainArguments:
             f"divisible by all hetero_process_meshes_dp {hetero_process_meshes_dp}!"
         )
 
-        assert all(
-            hetero_cp == hetero_process_meshes_cp[0] for hetero_cp in hetero_process_meshes_cp
-        ), f"all hetero_process_meshes_cp {hetero_process_meshes_cp} should be the same!"
+        for context_parallel_size in hetero_process_meshes_cp:
+            if self.args.seq_length is not None and context_parallel_size > 1:
+                assert self.args.seq_length % (context_parallel_size * 2) == 0, (
+                    "seq-length should be a multiple of 2 * context-parallel-size "
+                    "if context-parallel-size > 1."
+                )
+            if context_parallel_size > 1:
+                assert not self.args.use_legacy_models, (
+                    "Context parallelism is not supported in legacy models."
+                )
+            if self.args.use_tp_pp_dp_mapping:
+                assert context_parallel_size * self.args.expert_model_parallel_size <= 1, (
+                    "context_parallel and expert_model_parallel can't be used with "
+                    "tp-pp-dp mapping."
+                )
 
         assert all(1 == hetero_ep for hetero_ep in hetero_process_meshes_ep) or all(
             1 != hetero_ep for hetero_ep in hetero_process_meshes_ep

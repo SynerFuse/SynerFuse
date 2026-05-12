@@ -14,7 +14,7 @@ from synerfuse.legacy import fused_kernels
 from synerfuse.training import get_adlr_autoresume
 from synerfuse.training import get_args
 from synerfuse.training import get_tensorboard_writer
-from synerfuse.core import mpu, tensor_parallel
+from synerfuse.core import mpu, parallel_state, tensor_parallel
 from synerfuse.training.arguments import parse_args, validate_args
 from synerfuse.training.yaml_arguments import validate_yaml
 from synerfuse.training.checkpointing import load_args_from_checkpoint
@@ -206,7 +206,11 @@ def _initialize_tp_communicators():
     else:
        ub_cfgs = {}
 
-    input_shape = [(args.seq_length * args.micro_batch_size) // args.context_parallel_size , args.hidden_size]
+    input_shape = [
+        (args.seq_length * args.micro_batch_size)
+        // parallel_state.get_context_parallel_world_size(),
+        args.hidden_size,
+    ]
 
     #We create a MPI process group, which is needed to bootstrap the pipelined 
     #tensor-model-parallel communication overlap

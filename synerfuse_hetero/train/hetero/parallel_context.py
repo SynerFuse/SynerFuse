@@ -1,3 +1,4 @@
+# -*- coding: gbk -*-
 import os
 import math
 import warnings
