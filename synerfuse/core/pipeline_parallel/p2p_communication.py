@@ -28,7 +28,9 @@ def get_device_type_for_comm(model_parallel_group=None):
     device = 'cuda'
     # "cpu:gloo": gloo only supports cpu tensor.
     # "gloo" & "cpu:gloo,cuda:gloo": gloo supports both cpu and cuda tensor.
-    if 'gloo' in torch.distributed.get_backend(model_parallel_group):
+    if isinstance(model_parallel_group, list):
+        model_parallel_group = model_parallel_group[0]
+    if 'cpu:gloo' == torch.distributed.get_backend(model_parallel_group):
         device = 'cpu'
     return device
 

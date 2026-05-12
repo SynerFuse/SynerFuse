@@ -326,6 +326,9 @@ class ModelParallelConfig:
     enable_hetero: str = None
     """Enable the heterogeneous training."""
 
+    use_partial_reduce_for_shared_embedding: bool = False
+    """Only reduce the local DP shard of shared embedding grads for hetero distributed optimizer."""
+
     hetero_pipeline_layer_split: list = None
     """A list of numbers of layers to be processed in the corresponding pipeline stages."""
 

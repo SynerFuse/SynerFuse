@@ -159,14 +159,22 @@ def validate_args(args, defaults={}):
         assert (
             args.hetero_process_meshes is not None
         ), "hetero_process_meshes should be specified when enable_hetero is True"
-        assert (
-            len(args.hetero_process_meshes) % 5 == 0
-        ), f"length of hetero_process_meshes {args.hetero_process_meshes} should be divisible by 5, the format should be tp0, cp0, ep0, dp0, pp0, tp1, cp1, ep1, dp1, pp1, ..."
-        hetero_process_meshes_tp = args.hetero_process_meshes[0::5]
-        hetero_process_meshes_cp = args.hetero_process_meshes[1::5]
-        hetero_process_meshes_ep = args.hetero_process_meshes[2::5]
-        hetero_process_meshes_dp = args.hetero_process_meshes[3::5]
-        hetero_process_meshes_pp = args.hetero_process_meshes[4::5]
+        if args.hetero_process_meshes and isinstance(args.hetero_process_meshes[0], list):
+            hetero_process_meshes = args.hetero_process_meshes
+        else:
+            assert (
+                len(args.hetero_process_meshes) % 5 == 0
+            ), f"length of hetero_process_meshes {args.hetero_process_meshes} should be divisible by 5, the format should be tp0, cp0, ep0, dp0, pp0, tp1, cp1, ep1, dp1, pp1, ..."
+            hetero_process_meshes = []
+            for i in range(0, len(args.hetero_process_meshes), 5):
+                hetero_process_meshes.append(args.hetero_process_meshes[i : i + 5])
+            args.hetero_process_meshes = hetero_process_meshes
+
+        hetero_process_meshes_tp = [mesh[0] for mesh in hetero_process_meshes]
+        hetero_process_meshes_cp = [mesh[1] for mesh in hetero_process_meshes]
+        hetero_process_meshes_ep = [mesh[2] for mesh in hetero_process_meshes]
+        hetero_process_meshes_dp = [mesh[3] for mesh in hetero_process_meshes]
+        hetero_process_meshes_pp = [mesh[4] for mesh in hetero_process_meshes]
 
         # Context parallel size
         for context_parallel_size in hetero_process_meshes_cp:
@@ -187,7 +195,7 @@ def validate_args(args, defaults={}):
             for hetero_dp in hetero_process_meshes_dp
         ), f"data_parallel_size * micro_batch_size {args.data_parallel_size * args.micro_batch_size} should be divisible by all hetero_process_meshes_dp {hetero_process_meshes_dp}!"
         # NOTE: Ep size should all be 1 or all be not 1
-        assert all(1 == hetero_ep for hetero_ep in hetero_process_meshes_ep) or any(
+        assert all(1 == hetero_ep for hetero_ep in hetero_process_meshes_ep) or all(
             1 != hetero_ep for hetero_ep in hetero_process_meshes_ep
         ), f"all hetero_process_meshes_ep {hetero_process_meshes_ep} should be the 1 or none of hetero_process_meshes_ep is not 1!"
         # Pipeline model parallel size
@@ -225,55 +233,51 @@ def validate_args(args, defaults={}):
             assert args.pipeline_model_parallel_size == len(
                 args.hetero_pipeline_layer_split
             ), f"pipeline_model_parallel_size {args.pipeline_model_parallel_size} should be equal to the length of hetero_pipeline_layer_split {args.hetero_pipeline_layer_split}"
-        hetero_process_meshes = []
-        for i in range(0, len(args.hetero_process_meshes), 5):
-            hetero_process_meshes.append(args.hetero_process_meshes[i : i + 5])
-        args.hetero_process_meshes = hetero_process_meshes
+    if not args.enable_hetero:
+        # Tensor model parallel size.
+        args.tensor_model_parallel_size = min(
+            args.tensor_model_parallel_size, args.world_size)
+        assert args.world_size % args.tensor_model_parallel_size == 0, 'world size'\
+            ' ({}) is not divisible by tensor model parallel size ({})'.format(
+                args.world_size, args.tensor_model_parallel_size)
 
-    # Tensor model parallel size.
-    args.tensor_model_parallel_size = min(
-        args.tensor_model_parallel_size, args.world_size)
-    assert args.world_size % args.tensor_model_parallel_size == 0, 'world size'\
-        ' ({}) is not divisible by tensor model parallel size ({})'.format(
-            args.world_size, args.tensor_model_parallel_size)
+        # Pipeline model parallel size.
+        args.pipeline_model_parallel_size = min(
+            args.pipeline_model_parallel_size,
+            (args.world_size // args.tensor_model_parallel_size))
+        args.transformer_pipeline_model_parallel_size = (
+            args.pipeline_model_parallel_size - 1
+            if args.standalone_embedding_stage else
+            args.pipeline_model_parallel_size
+        )
 
-    # Pipeline model parallel size.
-    args.pipeline_model_parallel_size = min(
-        args.pipeline_model_parallel_size,
-        (args.world_size // args.tensor_model_parallel_size))
-    args.transformer_pipeline_model_parallel_size = (
-        args.pipeline_model_parallel_size - 1
-        if args.standalone_embedding_stage else
-        args.pipeline_model_parallel_size
-    )
+        # Checks.
+        model_parallel_size = args.pipeline_model_parallel_size * \
+                              args.tensor_model_parallel_size
+        assert args.world_size % (model_parallel_size * args.context_parallel_size) == 0, \
+            'world size ({}) is not divisible by tensor parallel size ({}) times ' \
+            'pipeline parallel size ({}) times context parallel size ({})'.format(
+            args.world_size, args.tensor_model_parallel_size,
+            args.pipeline_model_parallel_size, args.context_parallel_size)
+        args.data_parallel_size = args.world_size // (model_parallel_size * args.context_parallel_size)
+        if args.rank == 0:
+            print('using world size: {}, data-parallel size: {}, '
+                  'context-parallel size: {} '
+                  'tensor-model-parallel size: {}, '
+                  'pipeline-model-parallel size: {} '.format(
+                      args.world_size, args.data_parallel_size,
+                      args.context_parallel_size,
+                      args.tensor_model_parallel_size,
+                      args.pipeline_model_parallel_size), flush=True)
+        if args.pipeline_model_parallel_size > 1:
+            if args.pipeline_model_parallel_split_rank is not None:
+                assert args.pipeline_model_parallel_split_rank < \
+                        args.pipeline_model_parallel_size, 'split rank needs'\
+                        ' to be less than pipeline model parallel size ({})'.format(
+                                args.pipeline_model_parallel_size)
 
-    # Checks.
-    model_parallel_size = args.pipeline_model_parallel_size * \
-                          args.tensor_model_parallel_size
-    assert args.world_size % (model_parallel_size * args.context_parallel_size) == 0, \
-        'world size ({}) is not divisible by tensor parallel size ({}) times ' \
-        'pipeline parallel size ({}) times context parallel size ({})'.format(
-        args.world_size, args.tensor_model_parallel_size,
-        args.pipeline_model_parallel_size, args.context_parallel_size)
-    args.data_parallel_size = args.world_size // (model_parallel_size * args.context_parallel_size)
-    if args.rank == 0:
-        print('using world size: {}, data-parallel size: {}, '
-              'context-parallel size: {} '
-              'tensor-model-parallel size: {}, '
-              'pipeline-model-parallel size: {} '.format(
-                  args.world_size, args.data_parallel_size,
-                  args.context_parallel_size,
-                  args.tensor_model_parallel_size,
-                  args.pipeline_model_parallel_size), flush=True)
-    if args.pipeline_model_parallel_size > 1:
-        if args.pipeline_model_parallel_split_rank is not None:
-            assert args.pipeline_model_parallel_split_rank < \
-                    args.pipeline_model_parallel_size, 'split rank needs'\
-                    ' to be less than pipeline model parallel size ({})'.format(
-                            args.pipeline_model_parallel_size)
-
-    if args.tp_comm_overlap:
-        assert args.sequence_parallel == True, 'Tensor parallel communication/GEMM overlap can happen only when sequence parallelism is enabled'
+        if args.tp_comm_overlap:
+            assert args.sequence_parallel == True, 'Tensor parallel communication/GEMM overlap can happen only when sequence parallelism is enabled'
 
     # Deprecated arguments
     assert args.batch_size is None, '--batch-size argument is no longer ' \
@@ -319,6 +323,8 @@ def validate_args(args, defaults={}):
         args.split = legacy_default_split_value
 
     if args.micro_batch_size_per_dp is not None:
+        assert args.enable_hetero == False, \
+            "enable-hetero can't be used with micro_batch_size_per_dp"
         assert args.micro_batch_size == None, \
             'micro-batch-size must be None when use micro-batch-size-per-dp!'
         assert args.context_parallel_size * args.expert_model_parallel_size == 1, \
@@ -2087,6 +2093,10 @@ def _add_hetero_args(parser):
                        'This argument must be in the form: TP0, CP0, EP0, DP0, PP0, TP1, CP1, EP1, DP1, PP1...TPN, CPN, EPN, DPN, PPN. CP and TP size can be different, sum of PP should match pipeline-model-parallel-size, DP size should be the same.')
     group.add_argument('--hetero-use-cpu-communication', action='store_true',
                        help='Use CPU for communication for heterogeneous communication.')
+    group.add_argument('--expert-tensor-parallel-size-per-process-mesh', nargs='*', type=int, default=None,
+                       help='The number of tensor parallel experts for each process mesh.')
+    group.add_argument('--use-partial-reduce-for-shared-embedding', action='store_true',
+                       help='Reduce only the local DP shard of shared embedding grads in hetero mode.')
     group.add_argument('--micro-batch-size-per-dp', nargs='*', type=int, default=None,
                        help='Incompatible with --num-layers-per-virtual-pipeline-stage.'
                             '--micro-batch-size-per-dp must be in the form: n0 mbs0 n1 mbs1 ...'

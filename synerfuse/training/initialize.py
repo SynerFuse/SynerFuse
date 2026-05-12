@@ -21,6 +21,7 @@ from synerfuse.training.checkpointing import load_args_from_checkpoint
 from synerfuse.training.global_vars import set_global_variables
 from synerfuse.legacy.model.transformer import bias_dropout_add_fused_train
 from synerfuse.legacy.model.fused_bias_gelu import bias_gelu
+from synerfuse_hetero.train import FSTrainArguments
 from synerfuse_hetero.train import set_parallel_context
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,10 @@ def initialize_megatron(
     if args.use_checkpoint_args or args_defaults.get("use_checkpoint_args", False):
         assert args.load is not None, "--use-checkpoints-args requires --load argument"
         load_args_from_checkpoint(args)
+
+    if args.hetero_process_meshes is not None:
+        fs_argument = FSTrainArguments(args)
+        fs_argument.pre_validate_args()
 
     if args.yaml_cfg is not None:
         args = validate_yaml(args, args_defaults)
