@@ -25,11 +25,6 @@ class ModelParallelConfig:
     num_layers_per_stage: Optional[List[int]] = None
     """Number of layers per pipeline stage."""
 
-    num_micro_batches_grad_factor: float = 0
-    """If this is not zero, the num micro batches per dp implementation would be used.
-       Defaults to 0.
-    """
-
     virtual_pipeline_model_parallel_size: Optional[int] = None
     """Interleaved pipeline parallelism is used to improve performance by reducing the pipeline
        bubble.  Considers a transformer block as a list of smaller transformer (virtual) blocks.
@@ -113,7 +108,7 @@ class ModelParallelConfig:
     timers: Callable = None
     """Timers object to call for various timing functions. See megatron.core.timers.Timers"""
 
-    num_micro_batches_grad_factor: float = 0
+    num_micro_batches_gard_factor: float = 0
     """If this is not zero, the num micro batches per dp implementation would be used.
        Defaults to 0.
     """
@@ -330,6 +325,9 @@ class ModelParallelConfig:
     ###################
     enable_hetero: str = None
     """Enable the heterogeneous training."""
+
+    use_partial_reduce_for_shared_embedding: bool = False
+    """Only reduce the local DP shard of shared embedding grads for hetero distributed optimizer."""
 
     hetero_pipeline_layer_split: list = None
     """A list of numbers of layers to be processed in the corresponding pipeline stages."""

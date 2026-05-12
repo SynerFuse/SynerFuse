@@ -86,15 +86,6 @@ class MegatronPretrainingSampler:
             self.micro_batch_size * data_parallel_size
         self.drop_last = drop_last
 
-        args = get_args()
-        if args.num_micro_batches_grad_factor != 0:
-            self.data_parallel_group = mpu.get_data_parallel_device_group()
-            self.data_parallel_rank = torch.distributed.get_rank(group=self.data_parallel_group)
-            data_parallel_size = torch.distributed.get_world_size(group=self.data_parallel_group)
-            from synerfuse.core.num_microbatches_calculator import _GLOBAL_NUM_MICROBATCHES_CALCULATOR
-            self.micro_batch_size = _GLOBAL_NUM_MICROBATCHES_CALCULATOR.get_micro_batch_size()
-            self.micro_batch_times_data_parallel_size = self.micro_batch_size * data_parallel_size
-
         # Sanity checks.
         assert self.total_samples > 0, \
             'no sample to consume: {}'.format(self.total_samples)
@@ -311,9 +302,11 @@ class RandomSeedDataset(Dataset):
         np.random.seed(seed)
         return self.dataset[idx]
 
+
 class MegatronPretrainingRandomSampler:
+
     def __init__(self, dataset, total_samples, consumed_samples, micro_batch_size,
-                 data_parallel_rank, data_parallel_size, data_sharding=True):
+                 data_parallel_rank, data_parallel_size, data_sharding):
         # Keep a copy of input params for later use.
         self.dataset = dataset
         self.total_samples = total_samples
@@ -324,18 +317,10 @@ class MegatronPretrainingRandomSampler:
         self.data_sharding = data_sharding
         self.micro_batch_times_data_parallel_size = \
             self.micro_batch_size * data_parallel_size
-
-        args = get_args()
-        if args.num_micro_batches_grad_factor != 0:
-            self.data_parallel_group = mpu.get_data_parallel_device_group()
-            self.data_parallel_rank = torch.distributed.get_rank(group=self.data_parallel_group)
-            self.data_parallel_size = torch.distributed.get_world_size(group=self.data_parallel_group)
-            from synerfuse.core.num_microbatches_calculator import _GLOBAL_NUM_MICROBATCHES_CALCULATOR
-            self.micro_batch_size = _GLOBAL_NUM_MICROBATCHES_CALCULATOR.get_micro_batch_size()
-            self.micro_batch_times_data_parallel_size = self.micro_batch_size * self.data_parallel_size
-
         self.last_batch_size = \
-            self.total_samples % self.micro_batch_times_data_parallel_size       # Sanity checks.
+            self.total_samples % self.micro_batch_times_data_parallel_size
+
+        # Sanity checks.
         assert self.total_samples > 0, \
             'no sample to consume: {}'.format(self.total_samples)
         assert self.micro_batch_size > 0

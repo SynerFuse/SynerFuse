@@ -21,6 +21,7 @@ from synerfuse.training.checkpointing import load_args_from_checkpoint
 from synerfuse.training.global_vars import set_global_variables
 from synerfuse.legacy.model.transformer import bias_dropout_add_fused_train
 from synerfuse.legacy.model.fused_bias_gelu import bias_gelu
+from synerfuse_hetero.train import FSTrainArguments
 from synerfuse_hetero.train import set_parallel_context
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,10 @@ def initialize_megatron(
     if args.use_checkpoint_args or args_defaults.get("use_checkpoint_args", False):
         assert args.load is not None, "--use-checkpoints-args requires --load argument"
         load_args_from_checkpoint(args)
+
+    if args.hetero_process_meshes is not None:
+        fs_argument = FSTrainArguments(args)
+        fs_argument.pre_validate_args()
 
     if args.yaml_cfg is not None:
         args = validate_yaml(args, args_defaults)
@@ -272,20 +277,7 @@ def _initialize_distributed():
                 nccl_communicator_config_path=args.nccl_communicator_config_path,
                 order='tp-cp-ep-dp-pp' if not args.use_tp_pp_dp_mapping else 'tp-pp-dp',
                 distributed_backend=args.distributed_backend,
-                hetero_data_parallel_size=args.hetero_data_parallel_size,
-                num_micro_batches_per_dp=args.num_micro_batches_per_dp,
-                micro_batch_size_per_dp=args.micro_batch_size_per_dp,
             )
-
-            # P2P communication
-            if args.overlap_p2p_comm:
-                from synerfuse.core.pipeline_parallel.p2p_communication import _communicate_shapes
-                _communicate_shapes(None, None, False, False, args)
-
-            # DP heterogeneous
-            if args.num_micro_batches_grad_factor != 0:
-                from synerfuse.core.parallel_state import get_data_parallel_device_group
-                get_data_parallel_device_group()
             if args.rank == 0:
                 print(
                     f"> initialized tensor model parallel with size "

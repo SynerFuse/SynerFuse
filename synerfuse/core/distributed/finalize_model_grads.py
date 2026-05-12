@@ -10,6 +10,15 @@ from ..transformer.transformer_config import TransformerConfig
 from ..utils import get_attr_wrapped_model, get_model_config
 
 
+def _get_device_type_for_comm(process_group=None):
+    """Return the tensor device required by a distributed backend."""
+    if isinstance(process_group, list):
+        process_group = process_group[0]
+    if torch.distributed.get_backend(process_group) == 'cpu:gloo':
+        return 'cpu'
+    return 'cuda'
+
+
 def _allreduce_word_embedding_grads(model: List[torch.nn.Module], config: TransformerConfig):
     """
     All-reduce word embedding grads.
@@ -22,6 +31,10 @@ def _allreduce_word_embedding_grads(model: List[torch.nn.Module], config: Transf
         parallel_state.is_rank_in_embedding_group(ignore_virtual=True)
         and parallel_state.get_pipeline_model_parallel_world_size() > 1
     ):
+        embedding_group = parallel_state.get_embedding_group()
+        embedding_groups = embedding_group if isinstance(embedding_group, list) else [embedding_group]
+        if torch.distributed.get_world_size(embedding_groups[0]) <= 1:
+            return
         if parallel_state.is_pipeline_first_stage(ignore_virtual=True):
             model_module = model[0]
         elif parallel_state.is_pipeline_last_stage(ignore_virtual=True):
@@ -34,11 +47,50 @@ def _allreduce_word_embedding_grads(model: List[torch.nn.Module], config: Transf
         # 'share_embeddings_and_output_weights' and 'shared_embedding_or_output_weight'
         # attributes already, causing get_attr_wrapped_model() to not unwrap anything here.
         # TODO: Clean this up once the wrapper classes inherit from core MegatronModule.
+        ddp_config = getattr(model_module, 'ddp_config', None)
+        use_distributed_optimizer = getattr(ddp_config, 'use_distributed_optimizer', False)
         model_module = get_attr_wrapped_model(model_module, 'pre_process', return_model_obj=True)
         if model_module.share_embeddings_and_output_weights:
             weight = model_module.shared_embedding_or_output_weight()
             grad = weight.main_grad
-            torch.distributed.all_reduce(grad, group=parallel_state.get_embedding_group())
+            if grad is None:
+                return
+            comm_device = _get_device_type_for_comm(embedding_groups)
+            if comm_device == "cpu":
+                grad = grad.cpu()
+            if (
+                use_distributed_optimizer
+                and getattr(config, 'use_partial_reduce_for_shared_embedding', False)
+            ):
+                dp_world_size = parallel_state.get_data_parallel_world_size()
+                dp_rank = parallel_state.get_data_parallel_rank()
+                assert grad.shape[0] % dp_world_size == 0, (
+                    f"grad shape: {grad.shape[0]}, dp_world_size: {dp_world_size}"
+                )
+                partition_size = grad.shape[0] // dp_world_size
+                if len(embedding_groups) == 1:
+                    offset = partition_size * dp_rank
+                    torch.distributed.all_reduce(
+                        grad[offset : offset + partition_size, :],
+                        group=embedding_groups[0],
+                    )
+                else:
+                    partition_size = partition_size // len(embedding_groups)
+                    for group_idx, group in enumerate(embedding_groups):
+                        offset = partition_size * (dp_rank * len(embedding_groups) + group_idx)
+                        torch.distributed.all_reduce(
+                            grad[offset : offset + partition_size, :],
+                            group=group,
+                        )
+            elif len(embedding_groups) == 1:
+                torch.distributed.all_reduce(grad, group=embedding_groups[0])
+            else:
+                original_grad = grad.clone().detach()
+                for group in embedding_groups:
+                    grad.copy_(original_grad)
+                    torch.distributed.all_reduce(grad, group=group)
+            if comm_device == "cpu":
+                weight.main_grad = grad.cuda(torch.cuda.current_device())
 
 
 def _allreduce_position_embedding_grads(model: List[torch.nn.Module], config: TransformerConfig):
@@ -139,15 +191,20 @@ def finalize_model_grads(model: List[torch.nn.Module], num_tokens: Optional[torc
         # the number of tokens is only present on the last stage, so broadcast it
         # to the other ranks in the pipeline parallel group.
         group = parallel_state.get_pipeline_model_parallel_group()
-        if "gloo" in group.name():
+        groups = group if isinstance(group, list) else [group]
+        last_ranks = [
+            parallel_state.get_pipeline_model_parallel_last_rank(g) for g in groups
+        ]
+        if _get_device_type_for_comm(groups) == "cpu":
             num_tokens = num_tokens.cpu()
-        torch.distributed.broadcast(
-            num_tokens,
-            src=parallel_state.get_pipeline_model_parallel_last_rank(),
-            group=group,
-        )
+        for last_rank, pp_group in zip(last_ranks, groups):
+            torch.distributed.broadcast(num_tokens, src=last_rank, group=pp_group)
+        if num_tokens.device == torch.device('cpu'):
+            num_tokens = num_tokens.cuda(torch.cuda.current_device())
         # all-reduce across DP ranks.
-        torch.distributed.all_reduce(num_tokens, group=parallel_state.get_data_parallel_group())
+        torch.distributed.all_reduce(
+            num_tokens, group=parallel_state.get_data_parallel_group(with_context_parallel=True)
+        )
         for model_chunk in model:
             if num_tokens > 0:
                 scaling = 1.0 / num_tokens

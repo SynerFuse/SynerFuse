@@ -36,6 +36,7 @@ from synerfuse.training import (
 )
 from synerfuse.core import DistributedDataParallel as DDP
 from synerfuse.core import mpu, parallel_state
+from synerfuse.core.pipeline_parallel.p2p_communication import get_device_type_for_comm
 from synerfuse.core.tensor_parallel import param_is_not_tensor_parallel_duplicate
 from synerfuse.legacy.model import Float16Module
 from synerfuse.legacy.model.module import param_is_not_shared
@@ -87,13 +88,24 @@ def calc_params_l2_norm(model):
         False # no per-parameter norm
     )
     norm_2 = norm * norm
-    if "cpu:gloo" == torch.distributed.get_backend(group=mpu.get_model_parallel_group()):
+    model_parallel_groups = mpu.get_model_parallel_group()
+    comm_device = get_device_type_for_comm(model_parallel_groups)
+    if comm_device == "cpu":
         norm_2 = norm_2.cpu()
-    if mpu.get_expert_model_parallel_world_size() == 1:
+    if isinstance(model_parallel_groups, list):
+        original_norm_2 = norm_2.clone().detach()
+        for model_parallel_group in model_parallel_groups:
+            norm_2.copy_(original_norm_2)
+            torch.distributed.all_reduce(
+                norm_2,
+                op=torch.distributed.ReduceOp.SUM,
+                group=model_parallel_group,
+            )
+    elif mpu.get_expert_model_parallel_world_size() == 1:
         # Sum across all model-parallel GPUs(tensor + pipeline).
         torch.distributed.all_reduce(norm_2,
                                      op=torch.distributed.ReduceOp.SUM,
-                                     group=mpu.get_model_parallel_group())
+                                     group=model_parallel_groups)
     else:
         # Sum across tensor, pipeline and expert model-parallel GPUs.
         torch.distributed.all_reduce(norm_2,
@@ -102,7 +114,7 @@ def calc_params_l2_norm(model):
         torch.distributed.all_reduce(norm_2,
                                      op=torch.distributed.ReduceOp.SUM,
                                      group=mpu.get_pipeline_model_parallel_group())
-    if "cpu:gloo" == torch.distributed.get_backend(group=mpu.get_model_parallel_group()):
+    if comm_device == "cpu":
         norm_2 = norm_2.cuda(torch.cuda.current_device())
     return norm_2.item() ** 0.5
 

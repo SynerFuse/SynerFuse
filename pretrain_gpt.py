@@ -146,14 +146,9 @@ def loss_func(loss_mask: torch.Tensor, output_tensor: torch.Tensor):
     # Reduce loss for logging.
     reporting_loss = loss.clone().detach()
     if args.num_micro_batches_per_dp is None:
-        if args.num_micro_batches_grad_factor == 0:
-            if "cpu:gloo" == torch.distributed.get_backend(group=mpu.get_data_parallel_group()):
-                reporting_loss = reporting_loss.cpu()
-            torch.distributed.all_reduce(reporting_loss, group=mpu.get_data_parallel_group())
-        else:
-            if "cpu:gloo" == torch.distributed.get_backend(group=mpu.get_data_parallel_device_group()):
-                reporting_loss = reporting_loss.cpu()
-            torch.distributed.all_reduce(reporting_loss, group=mpu.get_data_parallel_device_group())
+        if "cpu:gloo" == torch.distributed.get_backend(group=mpu.get_data_parallel_group()):
+            reporting_loss = reporting_loss.cpu()
+        torch.distributed.all_reduce(reporting_loss, group=mpu.get_data_parallel_group())
 
     local_num_tokens = loss[1].clone().detach().to(torch.int)
     return (
