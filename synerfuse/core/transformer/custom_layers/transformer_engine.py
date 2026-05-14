@@ -16,6 +16,7 @@ from synerfuse.core.packed_seq_params import PackedSeqParams
 from synerfuse.core.parallel_state import (
     get_context_parallel_global_ranks,
     get_context_parallel_group,
+    get_context_parallel_world_size,
     get_tensor_model_parallel_group,
     get_tensor_model_parallel_world_size,
 )
@@ -454,8 +455,11 @@ class TEDotProductAttention(te.pytorch.DotProductAttention):
         if _te_version > packaging.version.Version("0.12.0"):
             self.te_forward_mask_type = True
 
-        # Only Transformer-Engine version >= 1.0.0 supports context parallelism
-        if _te_version >= packaging.version.Version("1.0.0"):
+        # Only Transformer-Engine version >= 1.0.0 supports context parallelism.
+        if get_context_parallel_world_size() > 1:
+            assert _te_version >= packaging.version.Version(
+                "1.0.0"
+            ), "Only Transformer-Engine version >= 1.0.0 supports context parallelism!"
             if getattr(TEDotProductAttention, "cp_stream") is None:
                 TEDotProductAttention.cp_stream = torch.cuda.Stream()
             extra_kwargs["cp_group"] = get_context_parallel_group(check_initialized=False)
@@ -463,10 +467,6 @@ class TEDotProductAttention(te.pytorch.DotProductAttention):
                 check_initialized=False
             )
             extra_kwargs["cp_stream"] = TEDotProductAttention.cp_stream
-        else:
-            assert (
-                self.config.context_parallel_size == 1
-            ), "Only Transformer-Engine version >= 1.0.0 supports context parallelism!"
 
         if self.config.deterministic_mode:
             if int(os.getenv("NVTE_ALLOW_NONDETERMINISTIC_ALGO", "1")) != 0:
